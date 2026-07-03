@@ -1,4 +1,5 @@
 import { Collaborator } from 'src/collaborator/collaborator.entity';
+import { Consumer } from 'src/consumer/consumer.entity';
 import { Entity, 
     PrimaryGeneratedColumn,
     Column,
@@ -10,7 +11,7 @@ import { Entity,
 
 export enum UserRole {
     COLLABORATOR='COLLABORATOR',
-    LAWYER='LAWYER'
+    CONSUMER='CONSUMER'
 }
 
 @Entity('users')
@@ -32,6 +33,9 @@ export class Users {
     //relations One to One
     @OneToOne(() => Collaborator, collaborator => collaborator.user)
     collaborator: Collaborator;
+
+    @OneToOne(() => Consumer, consumer => consumer.user)
+    consumer: Consumer;
 
     @Column()
     password: string;

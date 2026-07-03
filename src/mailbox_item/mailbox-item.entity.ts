@@ -1,10 +1,11 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Mailbox } from "src/mailbox/mailbox.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export enum MailboxItemStatus {
     ENTERED = "ENTERED",
     ACTIVE = "ACTIVE",
     VIEWED = "VIEWED",
-    RECIEIVED = "RECEIVED",
+    RECEIVED = "RECEIVED",
 }
 
 @Entity('mailbox_item') 
@@ -13,7 +14,13 @@ export class MailboxItem {
     id: number;
 
     @Column()
-    name: string;
+    title: string;
+
+    @ManyToOne(() => Mailbox, mailbox => mailbox.mailboxItems)
+    @JoinColumn({
+        name: "mailbox_id"
+    })
+    mailbox: Mailbox;
 
     @Column()
     description: string;

@@ -5,6 +5,10 @@ import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './user/users.module';
 import { CollaboratorModule } from './collaborator/collaborator.module';
+import { ConsumerModule } from './consumer/consumer.module';
+import { PaymentsModule } from './payments/payment.module';
+import { MailboxModule } from './mailbox/mailbox.module';
+import { MailboxItemModule } from './mailbox_item/mailbox-item.module';
 
 @Module({
   
@@ -22,8 +26,12 @@ import { CollaboratorModule } from './collaborator/collaborator.module';
       autoLoadEntities: true,
       synchronize: true,
     }),
+    ConsumerModule,
     UsersModule,
-    CollaboratorModule
+    CollaboratorModule,
+    PaymentsModule,
+    MailboxModule,
+    MailboxItemModule,
   ],
   controllers: [AppController],
   providers: [AppService],

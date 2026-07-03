@@ -3,7 +3,7 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToO
 
 // es una prueba de entity para payments q ojo no croe que se quede pero es para probar una funcionamiento
 @Entity('payments')
-export class Payment{
+export class Payments{
     @PrimaryGeneratedColumn()
     id: number;
 

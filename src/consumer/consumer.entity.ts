@@ -1,5 +1,6 @@
 import { Mailbox } from "src/mailbox/mailbox.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Users } from "src/user/users.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export enum Sex {
     MALE="MALE",
@@ -21,18 +22,13 @@ export class Consumer {
     names: string;
 
     @Column()
-    cal: string;
-
-    @Column()
     dni: string;
 
-    @Column(
-        {
-            type: 'enum',
-            enum: Sex
-        }
-    )
-    sex: Sex;
+    @OneToOne(() => Users, user => user.consumer)
+    @JoinColumn({
+        name: "user_id"
+    })
+    user: Users;
 
     @Column(
         {
