@@ -6,7 +6,10 @@ export class CreateCollaboratorDto {
 
     @ApiProperty()
     lastnames: string;
-    
+
     @ApiProperty()
-    userId: number;
+    email: string;
+
+    @ApiProperty()
+    password: string;
 }

@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Users } from "./users.entity";
 import * as bcrypt from 'bcrypt';
-import { Repository } from "typeorm";
+import { EntityManager, Repository } from "typeorm";
 import { RegisterRequestDto } from "./dtos/register-request.dto";
 import { LoginRequestDto } from "./dtos/login-request.dto";
 import { UnauthorizedException } from "@nestjs/common/exceptions";
@@ -14,11 +14,20 @@ export class UsersService {
         private readonly usersRepository: Repository<Users>
     ) {}
 
-    async registerUser (dto: RegisterRequestDto): Promise<Users> {
+    async registerUser(
+        dto: RegisterRequestDto,
+        manager?: EntityManager,
+    ): Promise<Users> {
+        const repository = manager
+            ? manager.getRepository(Users)
+            : this.usersRepository;
+
         const hashedPassword = await bcrypt.hash(dto.password, 10);
-        const user = this.usersRepository.create(dto);
+
+        const user = repository.create(dto);
         user.password = hashedPassword;
-        return await this.usersRepository.save(user);
+
+        return await repository.save(user);
     }
 
     async loginUser(dto: LoginRequestDto): Promise<Users> {

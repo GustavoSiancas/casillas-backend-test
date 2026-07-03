@@ -6,6 +6,7 @@ import { Consumer } from "src/consumer/consumer.entity";
 
 import { MailboxService } from "./mailbox.service";
 import { MailboxController } from "./mailbox.controller";
+import { PaymentsModule } from "src/payments/payment.module";
 
 @Module({
     imports: [
@@ -13,6 +14,7 @@ import { MailboxController } from "./mailbox.controller";
             Mailbox,
             Consumer,
         ]),
+        PaymentsModule,
     ],
     controllers: [MailboxController],
     providers: [MailboxService],

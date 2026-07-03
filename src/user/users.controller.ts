@@ -10,13 +10,6 @@ export class UsersController {
     private readonly usersService: UsersService,
   ) {}
 
-  @Post('register')
-  async register(
-    @Body() dto: RegisterRequestDto,
-  ): Promise<Users> {
-    return this.usersService.registerUser(dto);
-  }
-
   @Post('login')
   async login(
     @Body() dto: LoginRequestDto,

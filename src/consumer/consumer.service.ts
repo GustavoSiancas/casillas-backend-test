@@ -2,40 +2,46 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Consumer } from './consumer.entity';
 import { UserRole, Users } from 'src/user/users.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CreateConsumerDto } from './dtos/create-consumer.dto';
 import { NotFoundException } from '@nestjs/common/exceptions';
+import { UsersService } from 'src/user/users.service';
 
 @Injectable()
 export class ConsumerService {
     constructor(
         @InjectRepository(Consumer)
         private readonly consumerRepository: Repository<Consumer>,
-        
-        @InjectRepository(Users)
-        private readonly usersRepository: Repository<Users>
+    
+        private readonly dataSource: DataSource,
+
+        private readonly usersService: UsersService
     ) {}
 
+    // just a method to create a consumer, this method is aviable for collaborators
     async createConsumer(dto: CreateConsumerDto): Promise<Consumer> {
-        const user = await this.usersRepository.findOne({
-            where: { id: dto.userId },
-        });
+        return this.dataSource.transaction(async (manager) => {
+            const user = await this.usersService.registerUser(
+                {
+                    email: dto.email,
+                    password: dto.password,
+                    role: UserRole.CONSUMER,
+                },
+                manager,
+            );
 
-        if (!user) {
-            throw new NotFoundException(`User with ID ${dto.userId} not found`);
-        }
-
-        if (user.role === UserRole.CONSUMER){
-            const consumer = this.consumerRepository.create({
+            const consumer = manager.create(Consumer, {
                 names: dto.names,
                 consumerType: dto.consumerType,
-                user: user,
-                });
-            return await this.consumerRepository.save(consumer);
-        
-        } else {
-            throw new NotFoundException(`User with ID ${dto.userId} is not a consumer`);
-        }
-    
+                dni: dto.dni,
+                user,
+            });
+
+            return await manager.save(consumer);
+        });
+    }
+
+    async getAllConsumers(): Promise<Consumer[]> {
+        return await this.consumerRepository.find();
     }
 }

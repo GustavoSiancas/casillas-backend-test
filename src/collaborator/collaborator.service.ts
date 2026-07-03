@@ -1,39 +1,42 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Collaborator } from './collaborator.entity';
-import { Repository } from 'typeorm';
-import { UserRole, Users } from 'src/user/users.entity';
+import { DataSource, Repository } from 'typeorm';
+import { UserRole } from 'src/user/users.entity';
 import { CreateCollaboratorDto } from './dtos/create-collaborator.dto';
+import { UsersService } from 'src/user/users.service';
 
 @Injectable()
 export class CollaboratorService {
     constructor(
         @InjectRepository(Collaborator)
         private readonly collaboratorRepository: Repository<Collaborator>,
-        @InjectRepository(Users)
-        private readonly usersRepository: Repository<Users>
+
+        private readonly UsersService: UsersService,
+
+        private readonly dataSource: DataSource
+
+
     ) {}
 
     async createCollaborator(dto: CreateCollaboratorDto): Promise<Collaborator> {
-        const user = await this.usersRepository.findOne({
-            where: { id: dto.userId },
-        });
-        if (!user) {
-            throw new NotFoundException(`User with ID ${dto.userId} not found`);
-        }
+        return this.dataSource.transaction(async (manager) => {
+            const user = await this.UsersService.registerUser(
+                {
+                    email: dto.email,
+                    password: dto.password,
+                    role: UserRole.COLLABORATOR,
+                },
+                manager,
+            );
 
-        if (user.role === UserRole.COLLABORATOR){
-            const collaborator = this.collaboratorRepository.create({
+            const collaborator = manager.create(Collaborator, {
                 names: dto.names,
                 lastnames: dto.lastnames,
-                user: user,
+                user,
             });
-            return await this.collaboratorRepository.save(collaborator);
-
-        } else {
-            throw new NotFoundException(`User with ID ${dto.userId} is not a collaborator`);
-        }
-
+            return await manager.save(collaborator);
+        });
     }
 
 

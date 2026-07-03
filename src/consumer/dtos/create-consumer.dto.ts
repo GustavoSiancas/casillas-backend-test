@@ -9,5 +9,11 @@ export class CreateConsumerDto {
     consumerType: ConsumerType;
 
     @ApiProperty()
-    userId: number;
+    email: string;
+    
+    @ApiProperty()
+    dni: string;
+
+    @ApiProperty()
+    password: string;
 }

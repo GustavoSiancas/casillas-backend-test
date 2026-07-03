@@ -5,6 +5,7 @@ import { Collaborator } from './collaborator.entity';
 import { CollaboratorController } from './collaborator.controller';
 import { CollaboratorService } from './collaborator.service';
 import { Users } from 'src/user/users.entity';
+import { UsersModule } from 'src/user/users.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { Users } from 'src/user/users.entity';
       Collaborator,
       Users,
     ]),
+    UsersModule,
   ],
   controllers: [CollaboratorController],
   providers: [CollaboratorService],
