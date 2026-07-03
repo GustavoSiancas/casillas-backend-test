@@ -1,13 +1,15 @@
+import { Collaborator } from 'src/collaborator/collaborator.entity';
 import { Entity, 
     PrimaryGeneratedColumn,
     Column,
     CreateDateColumn,
     UpdateDateColumn,
-    DeleteDateColumn
+    DeleteDateColumn,
+    OneToOne
 } from 'typeorm';
 
 export enum UserRole {
-    COLABORATOR='COLABORATOR',
+    COLLABORATOR='COLLABORATOR',
     LAWYER='LAWYER'
 }
 
@@ -26,6 +28,10 @@ export class Users {
         }
     )
     role: UserRole;
+
+    //relations One to One
+    @OneToOne(() => Collaborator, collaborator => collaborator.user)
+    collaborator: Collaborator;
 
     @Column()
     password: string;

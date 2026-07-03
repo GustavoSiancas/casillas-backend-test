@@ -1,4 +1,6 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Users } from "src/user/users.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+
 
 @Entity('colaborator')
 export class Collaborator {
@@ -10,6 +12,12 @@ export class Collaborator {
 
     @Column()
     lastnames: string;
+
+    @OneToOne(() => Users, user => user.collaborator)
+    @JoinColumn({
+        name: "user_id"
+    })
+    user: Users;
 
     @CreateDateColumn()
     createdAt: Date;
