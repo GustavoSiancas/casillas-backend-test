@@ -2,10 +2,11 @@ import { Mailbox } from "src/mailbox/mailbox.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export enum MailboxItemStatus {
-    ENTERED = "ENTERED", // RECIBIDO POR EL AREA DE CASILLAS
-    ACTIVE = "ACTIVE", // SIN CONSULTAR
-    VIEWED = "VIEWED", // CONSULTADO
-    RECEIVED = "RECEIVED", // ENTREGADO
+    DRAFT = "DRAFT", // BORRADOR
+    RECEIVED = "RECEIVED", // RECIBIDO POR EL AREA DE CASILLAS
+    ON_VIEW = "ON_VIEW", // EN VISTA POR EL CONSUMIDOR
+    REQUESTED = "REQUESTED", // SOLICITADO POR EL CONSUMIDOR
+    DELIVERED = "DELIVERED", // ENTREGADO
 }
 
 @Entity('mailbox_item') 
@@ -27,7 +28,7 @@ export class MailboxItem {
 
     @Column(
         { 
-        type: "enum", enum: MailboxItemStatus, default: MailboxItemStatus.ENTERED 
+        type: "enum", enum: MailboxItemStatus, default: MailboxItemStatus.DRAFT 
         }
     )
     status: MailboxItemStatus;

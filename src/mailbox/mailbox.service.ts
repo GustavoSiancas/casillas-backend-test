@@ -20,7 +20,7 @@ export class MailboxService {
         @InjectRepository(Consumer)
         private readonly consumerRepository: Repository<Consumer>,
 
-        private paymentService: PaymentsService
+        private readonly paymentService: PaymentsService,
     ) {}
 
     async createMailbox(dto: CreateMailboxDto): Promise<Mailbox> {
@@ -58,14 +58,12 @@ export class MailboxService {
         });
 
         try {
-            return await this.mailboxRepository.save(mailbox);
+            return this.mailboxRepository.save(mailbox);
         } catch (error: any) {
-            if (error.code === "23505") {
-                throw new ConflictException(
-                    "Mailbox already exists for this consumer and site",
-                );
-            }
-            if (error.code === "ER_DUP_ENTRY") {
+            if (
+                error.code === "23505" ||
+                error.code === "ER_DUP_ENTRY"
+            ) {
                 throw new ConflictException(
                     "Mailbox already exists for this consumer and site",
                 );
@@ -75,31 +73,89 @@ export class MailboxService {
         }
     }
 
-    //every 24h
-    async validateMailboxPayments(){
-        // todos los mailboxes 
-        const listMailboxes = await this.mailboxRepository.find();
+    async getAllMailboxes(): Promise<Mailbox[]> {
+        return this.mailboxRepository.find();
+    }
 
-        const listMailboxestoUpdate: Mailbox[] = [];
+    async getMailboxById(id: number): Promise<Mailbox> {
+        const mailbox = await this.mailboxRepository.findOne({
+            where: { id },
+        });
 
-        for (const mailbox of listMailboxes) {
-            const monthsOnDebt = await this.paymentService.getMonthsOnDebt(mailbox.id);
-            // si los meses de deuda son mayores a 3, cambiar el estado del mailbox de active a inactive
-            if (monthsOnDebt > 3 && mailbox.status === MailboxStatus.ACTIVE) {
+        if (!mailbox) {
+            throw new NotFoundException(
+                `Mailbox with ID ${id} not found`,
+            );
+        }
+
+        return mailbox;
+    }
+
+    async deleteMailbox(id: number): Promise<void> {
+        const mailbox = await this.mailboxRepository.findOne({
+            where: { id },
+        });
+
+        if (!mailbox) {
+            throw new NotFoundException(
+                `Mailbox with ID ${id} not found`,
+            );
+        }
+
+        await this.mailboxRepository.softDelete(id);
+    }
+
+    async getMailboxesByConsumer(
+        consumerId: number,
+    ): Promise<Mailbox[]> {
+        const consumer = await this.consumerRepository.findOne({
+            where: {
+                id: consumerId,
+            },
+        });
+
+        if (!consumer) {
+            throw new NotFoundException(
+                `Consumer with ID ${consumerId} not found`,
+            );
+        }
+
+        return this.mailboxRepository.find({
+            where: {
+                consumer: {
+                    id: consumerId,
+                },
+            },
+        });
+    }
+
+    // Ejecutar cada 24 horas
+    async validateMailboxPayments(): Promise<void> {
+        const mailboxes = await this.mailboxRepository.find();
+
+        const mailboxesToUpdate: Mailbox[] = [];
+
+        for (const mailbox of mailboxes) {
+            const monthsOnDebt =
+                await this.paymentService.getMonthsOnDebt(mailbox.id);
+
+            if (
+                monthsOnDebt > 3 &&
+                mailbox.status === MailboxStatus.ACTIVE
+            ) {
                 mailbox.status = MailboxStatus.INACTIVE;
-                listMailboxestoUpdate.push(mailbox);
-            } // si los meses de deuda son menores o iguales a 3, cambiar el estado del mailbox de inactive a active
-            else if (monthsOnDebt <= 3 && mailbox.status === MailboxStatus.INACTIVE) {
+                mailboxesToUpdate.push(mailbox);
+            } else if (
+                monthsOnDebt <= 3 &&
+                mailbox.status === MailboxStatus.INACTIVE
+            ) {
                 mailbox.status = MailboxStatus.ACTIVE;
-                listMailboxestoUpdate.push(mailbox);
+                mailboxesToUpdate.push(mailbox);
             }
-            // si los meses son mayores a 3 y el estado es inactive, no hacer nada
-            // si los meses son menores o iguales a 3 y el estado es active, no hacer nada
         }
 
-        if (listMailboxestoUpdate.length > 0) {
-            await this.mailboxRepository.save(listMailboxestoUpdate);
+        if (mailboxesToUpdate.length > 0) {
+            await this.mailboxRepository.save(mailboxesToUpdate);
         }
-
     }
 }

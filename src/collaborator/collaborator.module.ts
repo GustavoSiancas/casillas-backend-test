@@ -13,7 +13,7 @@ import { UsersModule } from 'src/user/users.module';
       Collaborator,
       Users,
     ]),
-    UsersModule,
+    UsersModule,  
   ],
   controllers: [CollaboratorController],
   providers: [CollaboratorService],

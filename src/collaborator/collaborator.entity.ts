@@ -2,7 +2,7 @@ import { Users } from "src/user/users.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 
-@Entity('colaborator')
+@Entity('collaborator')
 export class Collaborator {
     @PrimaryGeneratedColumn()
     id: number;
