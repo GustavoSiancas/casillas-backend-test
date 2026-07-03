@@ -7,11 +7,11 @@ export enum Sex {
     FEMALE="FEMALE"
 }
 
-export enum ConsumerType {
-    INDIVIDUAL="INDIVIDUAL",
-    LAW_FIRM ="LAW_FIRM",
-    BUSINESS="BUSINESS"
-}
+    export enum ConsumerType {
+        INDIVIDUAL="INDIVIDUAL",
+        LAW_FIRM ="LAW_FIRM",
+        BUSINESS="BUSINESS"
+    }
 
 @Entity('consumer')
 export class Consumer {
