@@ -2,7 +2,6 @@ import { Mailbox } from "src/mailbox/mailbox.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export enum MailboxItemStatus {
-    DRAFT = "DRAFT", // BORRADOR
     RECEIVED = "RECEIVED", // RECIBIDO POR EL AREA DE CASILLAS
     ON_VIEW = "ON_VIEW", // EN VISTA POR EL CONSUMIDOR
     REQUESTED = "REQUESTED", // SOLICITADO POR EL CONSUMIDOR
@@ -28,7 +27,7 @@ export class MailboxItem {
 
     @Column(
         { 
-        type: "enum", enum: MailboxItemStatus, default: MailboxItemStatus.DRAFT 
+        type: "enum", enum: MailboxItemStatus, default: MailboxItemStatus.RECEIVED
         }
     )
     status: MailboxItemStatus;

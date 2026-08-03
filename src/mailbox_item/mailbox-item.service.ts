@@ -87,9 +87,7 @@ export class MailboxItemService {
 
         const previousStatus = mailboxItem.status;
 
-        if (mailboxItem.status === MailboxItemStatus.DRAFT && nextStatus === MailboxItemStatus.RECEIVED) {
-            mailboxItem.status = nextStatus;
-        } else if (mailboxItem.status === MailboxItemStatus.RECEIVED && nextStatus === MailboxItemStatus.ON_VIEW) {
+        if (mailboxItem.status === MailboxItemStatus.RECEIVED && nextStatus === MailboxItemStatus.ON_VIEW) {
             mailboxItem.status = nextStatus;
         } else if (mailboxItem.status === MailboxItemStatus.ON_VIEW && nextStatus === MailboxItemStatus.REQUESTED) {
             mailboxItem.status = nextStatus;
@@ -129,10 +127,6 @@ export class MailboxItemService {
 
         if (!mailboxItem) {
             throw new Error(`Mailbox item with ID ${id} not found`);
-        }
-
-        if (mailboxItem.status !== MailboxItemStatus.DRAFT) {
-            throw new Error(`Cannot delete mailbox item with ID ${id} because its status is not DRAFT`);
         }
 
         await this.mailboxItemRepository.remove(mailboxItem);
