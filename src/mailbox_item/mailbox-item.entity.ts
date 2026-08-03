@@ -1,3 +1,4 @@
+import { Consumer } from "src/consumer/consumer.entity";
 import { Mailbox } from "src/mailbox/mailbox.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
@@ -22,6 +23,12 @@ export class MailboxItem {
     })
     mailbox: Mailbox;
 
+    @ManyToOne(() => Consumer, consumer => consumer.mailboxItems)
+    @JoinColumn({
+        name: "consumer_id"
+    })
+    consumer: Consumer;
+
     @Column()
     description: string;
 
@@ -31,6 +38,12 @@ export class MailboxItem {
         }
     )
     status: MailboxItemStatus;
+
+    @Column({
+        type: "boolean",
+        default: true
+    })
+    isActive: boolean;
 
     @CreateDateColumn()
     createdAt: Date;

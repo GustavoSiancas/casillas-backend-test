@@ -4,6 +4,7 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMa
 import { Business } from "./types/business/business.entity";
 import { Individual } from "./types/individual/individual.entity";
 import { LawFirm } from "./types/law_firm/law-firm.entity";
+import { MailboxItem } from "src/mailbox_item/mailbox-item.entity";
 
 export enum Sex {
     MALE="MALE",
@@ -43,7 +44,6 @@ export class Consumer {
     legal_representative: string;
 
     //data contact
-    
     @Column()
     legal_adress: string;
 
@@ -68,6 +68,9 @@ export class Consumer {
 
     @OneToMany(() => Mailbox, mailbox => mailbox.consumer)
     mailboxs: Mailbox[];
+
+    @OneToMany(() => MailboxItem, mailboxItem => mailboxItem.consumer)
+    mailboxItems: MailboxItem[];
 
     @CreateDateColumn()
     createdAt: Date;

@@ -26,7 +26,7 @@ export class Mailbox {
     @JoinColumn({
         name: "consumer_id"
     })
-    consumer: Consumer;
+    consumer: Consumer; // it changes the consumer of the mailbox, but it is not a foreign key, it is just a relation
 
     @OneToMany(() => Payments, payments => payments.mailbox)
     payments: Payments[];
