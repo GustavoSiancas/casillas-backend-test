@@ -28,6 +28,7 @@ export class MailboxItemService {
             title: dto.title,
             description: dto.description,
             mailbox: mailbox,
+            consumer: mailbox.consumer, // Assuming the consumer is the same as the mailbox's consumer
         });
 
         return await this.mailboxItemRepository.save(mailboxItem);
