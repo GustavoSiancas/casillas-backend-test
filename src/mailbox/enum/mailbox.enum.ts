@@ -1,0 +1,7 @@
+export enum MailboxSite {
+    MIRAFLORES = "MIRAFLORES",
+    LIMACENTRO = "LIMACENTRO",
+    LIMA_SUR = "LIMA_SUR",
+    LIMA_NORTE = "LIMA_NORTE",
+    LIMA_ESTE = "LIMA_ESTE"
+}

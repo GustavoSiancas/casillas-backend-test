@@ -33,6 +33,7 @@ export class CollaboratorService {
             const collaborator = manager.create(Collaborator, {
                 names: dto.names,
                 lastnames: dto.lastnames,
+                mailboxSite: dto.mailboxSite,
                 user,
             });
             return await manager.save(collaborator);

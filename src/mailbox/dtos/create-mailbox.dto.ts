@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { MailboxSite } from "../mailbox.entity";
+import { MailboxSite } from "src/mailbox/enum/mailbox.enum";
 
 export class CreateMailboxDto {
     @ApiProperty()

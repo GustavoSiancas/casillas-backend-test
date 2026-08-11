@@ -2,18 +2,11 @@ import { Consumer } from "src/consumer/consumer.entity";
 import { MailboxItem } from "src/mailbox_item/mailbox-item.entity";
 import { Payments } from "src/payments/payments.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn, Unique } from "typeorm";
+import { MailboxSite } from "./enum/mailbox.enum";
 
 export enum MailboxStatus {
     ACTIVE = "ACTIVE",
     INACTIVE = "INACTIVE"
-}
-
-export enum MailboxSite {
-    MIRAFLORES = "MIRAFLORES",
-    LIMACENTRO = "LIMACENTRO",
-    LIMA_SUR = "LIMA_SUR",
-    LIMA_NORTE = "LIMA_NORTE",
-    LIMA_ESTE = "LIMA_ESTE"
 }
 
 @Entity('mailbox')

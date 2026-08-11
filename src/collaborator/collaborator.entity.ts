@@ -1,6 +1,6 @@
+import { MailboxSite } from "src/mailbox/enum/mailbox.enum";
 import { Users } from "src/user/users.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-
 
 @Entity('collaborator')
 export class Collaborator {
@@ -18,6 +18,14 @@ export class Collaborator {
         name: "user_id"
     })
     user: Users;
+
+    @Column(
+        {
+            type: 'enum',
+            enum: MailboxSite
+        }
+    )
+    mailboxSite: MailboxSite;
 
     @CreateDateColumn()
     createdAt: Date;
