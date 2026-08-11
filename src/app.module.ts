@@ -9,6 +9,7 @@ import { ConsumerModule } from './consumer/consumer.module';
 import { PaymentsModule } from './payments/payment.module';
 import { MailboxModule } from './mailbox/mailbox.module';
 import { MailboxItemModule } from './mailbox_item/mailbox-item.module';
+import { ProcuratorModule } from './consumer/types/procurator/procurator.module';
 
 @Module({
   
@@ -32,6 +33,7 @@ import { MailboxItemModule } from './mailbox_item/mailbox-item.module';
     PaymentsModule,
     MailboxModule,
     MailboxItemModule,
+    ProcuratorModule,
   ],
   controllers: [AppController],
   providers: [AppService],

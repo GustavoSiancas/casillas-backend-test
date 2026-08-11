@@ -2,7 +2,6 @@ import { CollaboratorService } from "./collaborator.service";
 import { CreateCollaboratorDto } from "./dtos/create-collaborator.dto";
 import { Collaborator } from "./collaborator.entity";
 import { Body, Controller, Post } from "@nestjs/common";
-import { UsersService } from "src/user/users.service";
 
 @Controller('collaborator')
 export class CollaboratorController{

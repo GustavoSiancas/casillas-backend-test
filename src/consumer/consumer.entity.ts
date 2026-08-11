@@ -5,6 +5,7 @@ import { Business } from "./types/business/business.entity";
 import { Individual } from "./types/individual/individual.entity";
 import { LawFirm } from "./types/law_firm/law-firm.entity";
 import { MailboxItem } from "src/mailbox_item/mailbox-item.entity";
+import { Procurator } from "./types/procurator/procurator.entity";
 
 export enum Sex {
     MALE="MALE",
@@ -71,6 +72,9 @@ export class Consumer {
 
     @OneToMany(() => MailboxItem, mailboxItem => mailboxItem.consumer)
     mailboxItems: MailboxItem[];
+
+    @OneToMany(()=> Procurator, procurator => procurator.consumer)
+    procurators: Procurator[];
 
     @CreateDateColumn()
     createdAt: Date;

@@ -1,6 +1,7 @@
 import { Consumer } from "src/consumer/consumer.entity";
 import { Mailbox } from "src/mailbox/mailbox.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { MailboxItemDeliverable } from "./mailbox_item_deliverable/mailbox-item-deliverable.entity";
 
 export enum MailboxItemStatus {
     RECEIVED = "RECEIVED", // RECIBIDO POR EL AREA DE CASILLAS
@@ -28,6 +29,9 @@ export class MailboxItem {
         name: "consumer_id"
     })
     consumer: Consumer;
+
+    @OneToOne(() => MailboxItemDeliverable, mailboxItemDeliverable => mailboxItemDeliverable.mailboxItem)
+    mailboxItemDeliverable: MailboxItemDeliverable;
 
     @Column()
     description: string;
