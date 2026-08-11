@@ -1,5 +1,11 @@
 import { Consumer } from "src/consumer/consumer.entity";
-import { Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import {
+    Column,
+    Entity,
+    JoinColumn,
+    OneToOne,
+    PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Individual {
@@ -7,13 +13,17 @@ export class Individual {
     id: number;
 
     @OneToOne(() => Consumer, consumer => consumer.individual)
+    @JoinColumn({
+        name: "consumer_id"
+    })
     consumer: Consumer;
     
+    @Column()
     full_name: string;
 
+    @Column()
     dni: string;
 
+    @Column()
     cal_number: string;
-
-    // relations with user
 }
