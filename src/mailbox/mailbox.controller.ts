@@ -12,7 +12,7 @@ import {
 
 import { MailboxService } from "./mailbox.service";
 import { CreateMailboxDto } from "./dtos/create-mailbox.dto";
-import { Mailbox } from "./mailbox.entity";
+import { MailboxResponseDto } from './dtos/mailbox.response.dto';
 
 @Controller("mailbox")
 export class MailboxController {
@@ -24,29 +24,23 @@ export class MailboxController {
     @HttpCode(HttpStatus.CREATED)
     async createMailbox(
         @Body() dto: CreateMailboxDto,
-    ): Promise<Mailbox> {
-        return await this.mailboxService.createMailbox(dto);
+    ): Promise<MailboxResponseDto> {
+        const mailbox = await this.mailboxService.createMailbox(dto);
+        return MailboxResponseDto.fromEntity(mailbox);
     }
 
     @Get()
-    async getAllMailboxes() {
-        return this.mailboxService.getAllMailboxes();
+    async getAllMailboxes(): Promise<MailboxResponseDto[]> {
+        const mailboxes = await this.mailboxService.getAllMailboxes();
+        return mailboxes.map(MailboxResponseDto.fromEntity);
     }
 
     @Get(':id')
     async getMailboxById(
         @Param('id', ParseIntPipe) id: number,
-    ) {
-        return this.mailboxService.getMailboxById(id);
-    }
-
-    @Get('consumer/:consumerId')
-    async getMailboxesByConsumer(
-        @Param('consumerId', ParseIntPipe) consumerId: number,
-    ) {
-        return this.mailboxService.getMailboxesByConsumer(
-            consumerId,
-        );
+    ): Promise<MailboxResponseDto> {
+        const mailbox = await this.mailboxService.getMailboxById(id);
+        return MailboxResponseDto.fromEntity(mailbox);
     }
 
     @Delete(':id')

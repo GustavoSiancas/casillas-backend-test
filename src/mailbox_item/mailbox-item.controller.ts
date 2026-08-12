@@ -14,7 +14,7 @@ import {
 
 import { MailboxItemService } from "./mailbox-item.service";
 import { CreateMailboxItemDto } from "./dtos/create-mailbox-item.dto";
-import { MailboxItem, MailboxItemStatus } from "./mailbox-item.entity";
+import { MailboxItemStatus } from "./mailbox-item.entity";
 import { MailboxItemResponseDto } from './dtos/mailbox-item.response.dto';
 
 @Controller("mailbox-items")
@@ -36,14 +36,6 @@ export class MailboxItemController {
         return MailboxItemResponseDto.fromEntity(item);
     }
 
-    @Get(":id")
-    async getMailboxItemById(
-        @Param("id", ParseIntPipe) id: number,
-    ): Promise<MailboxItemResponseDto> {
-        const item = await this.mailboxItemService.getMailboxItemById(id);
-        return MailboxItemResponseDto.fromEntity(item);
-    }
-
     @Get("assignment/:mailboxConsumerId")
     async getItemsByMailboxConsumer(
         @Param("mailboxConsumerId", ParseIntPipe) mailboxConsumerId: number,
@@ -52,6 +44,14 @@ export class MailboxItemController {
             mailboxConsumerId,
         );
         return items.map(MailboxItemResponseDto.fromEntity);
+    }
+
+    @Get(":id")
+    async getMailboxItemById(
+        @Param("id", ParseIntPipe) id: number,
+    ): Promise<MailboxItemResponseDto> {
+        const item = await this.mailboxItemService.getMailboxItemById(id);
+        return MailboxItemResponseDto.fromEntity(item);
     }
 
     @Patch(":id/collaborator/status/:status")

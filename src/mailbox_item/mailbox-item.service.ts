@@ -1,10 +1,9 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { MailboxItem, MailboxItemStatus } from './mailbox-item.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Mailbox } from 'src/mailbox/mailbox.entity';
 import { CreateMailboxItemDto } from './dtos/create-mailbox-item.dto';
-import { DataSource } from 'typeorm';
 import { MailboxConsumer, MailboxConsumerStatus } from 'src/mailbox_consumer/mailbox-consumer.entity';
 
 @Injectable()
@@ -12,9 +11,6 @@ export class MailboxItemService {
     constructor(
         @InjectRepository(MailboxItem)
         private readonly mailboxItemRepository: Repository<MailboxItem>,
-
-        @InjectRepository(Mailbox)
-        private readonly mailboxRepository: Repository<Mailbox>,
 
         private readonly dataSource: DataSource,
     ) {}
@@ -55,7 +51,8 @@ export class MailboxItemService {
 
     async getMailboxItemById(id: number): Promise<MailboxItem> {
         const mailboxItem = await this.mailboxItemRepository.findOne({
-            where: { id }
+            where: { id },
+            relations: { mailboxConsumer: true },
         });
 
         if (!mailboxItem) {
@@ -65,51 +62,20 @@ export class MailboxItemService {
         return mailboxItem;
     }
 
-    async getAllMailboxItems(): Promise<MailboxItem[]> {
-        return await this.mailboxItemRepository.find();
-    }
-
-    async getMailboxItemsByMailboxId(mailboxId: number): Promise<MailboxItem[]> {
-        const mailbox = await this.mailboxRepository.findOne({
-            where: { id: mailboxId },
-        });
-
-        if (!mailbox) {
-            throw new NotFoundException(`Mailbox with ID ${mailboxId} not found`);
-        }
-
-        return await this.mailboxItemRepository.find({
-            where: { mailboxConsumer: { mailbox: { id: mailboxId } } },
-            relations: { mailboxConsumer: true },
-        });
-    }
-
     async getItemsByMailboxConsumer(
         mailboxConsumerId: number,
     ): Promise<MailboxItem[]> {
         return this.mailboxItemRepository.find({
             where: { mailboxConsumer: { id: mailboxConsumerId } },
+            relations: { mailboxConsumer: true },
             order: { receivedAt: 'DESC' },
         });
     }
 
-    async getMailboxItemsByConsumerId(
-        consumerId: number,
-    ): Promise<MailboxItem[]> {
-        return this.mailboxItemRepository
-            .createQueryBuilder('mailboxItem')
-            .innerJoin('mailboxItem.mailboxConsumer', 'mailboxConsumer')
-            .innerJoin('mailboxConsumer.consumer', 'consumer')
-            .innerJoin('mailboxConsumer.mailbox', 'mailbox')
-            .where('consumer.id = :consumerId', { consumerId })
-            .andWhere('mailbox.deletedAt IS NULL')
-            .andWhere('mailboxItem.deletedAt IS NULL')
-            .getMany();
-    }
-
     async updateMailboxItemStatusAsCollaborator(id: number, nextStatus: MailboxItemStatus): Promise<MailboxItem> {
         const mailboxItem = await this.mailboxItemRepository.findOne({
-            where: { id }
+            where: { id },
+            relations: { mailboxConsumer: true },
         });
 
         if (!mailboxItem) {
@@ -133,7 +99,8 @@ export class MailboxItemService {
 
     async updateMailboxItemStatusAsConsumer(id: number, nextStatus: MailboxItemStatus): Promise<MailboxItem> {
         const mailboxItem = await this.mailboxItemRepository.findOne({
-            where: { id }
+            where: { id },
+            relations: { mailboxConsumer: true },
         });
 
         if (!mailboxItem) {
