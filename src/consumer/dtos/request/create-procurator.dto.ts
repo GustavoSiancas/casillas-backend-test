@@ -3,9 +3,6 @@ import { ProcuratorDocumentType } from "src/consumer/types/procurator/procurator
 
 export class CreateProcuratorDto{
     @ApiProperty()
-    consumerId: number;
-
-    @ApiProperty()
     names: string;
 
     @ApiProperty()

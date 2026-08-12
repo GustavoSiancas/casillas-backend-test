@@ -1,11 +1,9 @@
-import { Mailbox } from "src/mailbox/mailbox.entity";
 import { Users } from "src/user/users.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Business } from "./types/business/business.entity";
 import { Individual } from "./types/individual/individual.entity";
 import { LawFirm } from "./types/law_firm/law-firm.entity";
-import { MailboxItem } from "src/mailbox_item/mailbox-item.entity";
-import { Procurator } from "./types/procurator/procurator.entity";
+import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
 
 export enum Sex {
     MALE="MALE",
@@ -67,14 +65,11 @@ export class Consumer {
     @OneToOne(() => LawFirm, lawFirm => lawFirm.consumer) // mapped
     lawFirm: LawFirm;
 
-    @OneToMany(() => Mailbox, mailbox => mailbox.consumer)
-    mailboxs: Mailbox[];
-
-    @OneToMany(() => MailboxItem, mailboxItem => mailboxItem.consumer)
-    mailboxItems: MailboxItem[];
-
-    @OneToMany(()=> Procurator, procurator => procurator.consumer)
-    procurators: Procurator[];
+    @OneToMany(
+        () => MailboxConsumer,
+        (mailboxConsumer) => mailboxConsumer.consumer,
+    )
+    mailboxConsumers: MailboxConsumer[];
 
     @CreateDateColumn()
     createdAt: Date;

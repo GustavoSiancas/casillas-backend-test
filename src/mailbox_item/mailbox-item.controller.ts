@@ -15,6 +15,7 @@ import {
 import { MailboxItemService } from "./mailbox-item.service";
 import { CreateMailboxItemDto } from "./dtos/create-mailbox-item.dto";
 import { MailboxItem, MailboxItemStatus } from "./mailbox-item.entity";
+import { MailboxItemResponseDto } from './dtos/mailbox-item.response.dto';
 
 @Controller("mailbox-items")
 export class MailboxItemController {
@@ -22,38 +23,35 @@ export class MailboxItemController {
         private readonly mailboxItemService: MailboxItemService,
     ) {}
 
-    @Post()
+    @Post("mailbox/:mailboxId")
     @HttpCode(HttpStatus.CREATED)
     async createMailboxItem(
+        @Param("mailboxId", ParseIntPipe) mailboxId: number,
         @Body() dto: CreateMailboxItemDto,
-    ): Promise<MailboxItem> {
-        return this.mailboxItemService.createMailboxItem(dto);
-    }
-
-    @Get()
-    async getAllMailboxItems(): Promise<MailboxItem[]> {
-        return this.mailboxItemService.getAllMailboxItems();
+    ): Promise<MailboxItemResponseDto> {
+        const item = await this.mailboxItemService.createMailboxItem(
+            mailboxId,
+            dto,
+        );
+        return MailboxItemResponseDto.fromEntity(item);
     }
 
     @Get(":id")
     async getMailboxItemById(
         @Param("id", ParseIntPipe) id: number,
-    ): Promise<MailboxItem> {
-        return this.mailboxItemService.getMailboxItemById(id);
+    ): Promise<MailboxItemResponseDto> {
+        const item = await this.mailboxItemService.getMailboxItemById(id);
+        return MailboxItemResponseDto.fromEntity(item);
     }
 
-    @Get("mailbox/:mailboxId")
-    async getMailboxItemsByMailboxId(
-        @Param("mailboxId", ParseIntPipe) mailboxId: number,
-    ): Promise<MailboxItem[]> {
-        return this.mailboxItemService.getMailboxItemsByMailboxId(mailboxId);
-    }
-
-    @Get("consumer/:consumerId")
-    async getMailboxItemsByConsumerId(
-        @Param("consumerId", ParseIntPipe) consumerId: number,
-    ): Promise<MailboxItem[]> {
-        return this.mailboxItemService.getMailboxItemsByConsumerId(consumerId);
+    @Get("assignment/:mailboxConsumerId")
+    async getItemsByMailboxConsumer(
+        @Param("mailboxConsumerId", ParseIntPipe) mailboxConsumerId: number,
+    ): Promise<MailboxItemResponseDto[]> {
+        const items = await this.mailboxItemService.getItemsByMailboxConsumer(
+            mailboxConsumerId,
+        );
+        return items.map(MailboxItemResponseDto.fromEntity);
     }
 
     @Patch(":id/collaborator/status/:status")
@@ -61,11 +59,12 @@ export class MailboxItemController {
         @Param("id", ParseIntPipe) id: number,
         @Param("status", new ParseEnumPipe(MailboxItemStatus))
         status: MailboxItemStatus,
-    ): Promise<MailboxItem> {
-        return this.mailboxItemService.updateMailboxItemStatusAsCollaborator(
+    ): Promise<MailboxItemResponseDto> {
+        const item = await this.mailboxItemService.updateMailboxItemStatusAsCollaborator(
             id,
             status,
         );
+        return MailboxItemResponseDto.fromEntity(item);
     }
 
     @Patch(":id/consumer/status/:status")
@@ -73,11 +72,12 @@ export class MailboxItemController {
         @Param("id", ParseIntPipe) id: number,
         @Param("status", new ParseEnumPipe(MailboxItemStatus))
         status: MailboxItemStatus,
-    ): Promise<MailboxItem> {
-        return this.mailboxItemService.updateMailboxItemStatusAsConsumer(
+    ): Promise<MailboxItemResponseDto> {
+        const item = await this.mailboxItemService.updateMailboxItemStatusAsConsumer(
             id,
             status,
         );
+        return MailboxItemResponseDto.fromEntity(item);
     }
 
     @Delete(":id")

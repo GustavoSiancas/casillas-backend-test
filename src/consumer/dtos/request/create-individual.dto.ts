@@ -2,8 +2,6 @@ import { ApiProperty } from "@nestjs/swagger";
 import { ConsumerType } from "../../consumer.entity";
 
 export class CreateIndividualDto {
-    @ApiProperty()
-    names: string;
 
     @ApiProperty()
     consumerType: ConsumerType;

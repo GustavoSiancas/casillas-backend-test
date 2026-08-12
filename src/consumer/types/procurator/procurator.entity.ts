@@ -1,5 +1,5 @@
-import { Consumer } from "src/consumer/consumer.entity";
 import { MailboxItemDeliverable } from "src/mailbox_item/mailbox_item_deliverable/mailbox-item-deliverable.entity";
+import { MailboxProcurator } from "src/mailbox_procurator/mailbox-procurator.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export enum ProcuratorDocumentType {
@@ -18,10 +18,6 @@ export class Procurator {
     @Column()
     last_names: string;
 
-    // por ahora los procuradores solo tendran un usuario
-    @ManyToOne(()=> Consumer, consumer => consumer.procurators)
-    consumer: Consumer;
-
     @Column({
         type: 'enum',
         enum: ProcuratorDocumentType,
@@ -39,6 +35,12 @@ export class Procurator {
 
     @OneToMany(() => MailboxItemDeliverable, mailboxItemDeliverable => mailboxItemDeliverable.procurator)
     mailboxItemDeliverables: MailboxItemDeliverable[];
+
+    @OneToMany(
+        () => MailboxProcurator,
+        (mailboxProcurator) => mailboxProcurator.procurator,
+    )
+    mailboxProcurators: MailboxProcurator[];
 
     @CreateDateColumn()
     created_at: Date;

@@ -145,6 +145,43 @@ export class ConsumerService {
     }
 
     async getAllConsumers(): Promise<Consumer[]> {
-        return await this.consumerRepository.find();
+        return this.consumerRepository.find();
+    }
+
+    async getConsumerWithDataUnique(
+        data: string,
+        consumerType: ConsumerType,
+    ): Promise<Consumer | null> {
+        switch (consumerType) {
+            case ConsumerType.INDIVIDUAL:
+                return this.consumerRepository.findOne({
+                    where: {
+                        consumerType,
+                        individual: { dni: data },
+                    },
+                    relations: { individual: true },
+                });
+
+            case ConsumerType.BUSINESS:
+                return this.consumerRepository.findOne({
+                    where: {
+                        consumerType,
+                        business: { ruc: data },
+                    },
+                    relations: { business: true },
+                });
+
+            case ConsumerType.LAW_FIRM:
+                return this.consumerRepository.findOne({
+                    where: {
+                        consumerType,
+                        lawFirm: { ruc: data },
+                    },
+                    relations: { lawFirm: true },
+                });
+
+            default:
+                return null;
+        }
     }
 }

@@ -1,5 +1,4 @@
-import { Consumer } from "src/consumer/consumer.entity";
-import { Mailbox } from "src/mailbox/mailbox.entity";
+import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MailboxItemDeliverable } from "./mailbox_item_deliverable/mailbox-item-deliverable.entity";
 
@@ -18,17 +17,15 @@ export class MailboxItem {
     @Column()
     title: string;
 
-    @ManyToOne(() => Mailbox, mailbox => mailbox.mailboxItems)
+    @ManyToOne(
+        () => MailboxConsumer,
+        (mailboxConsumer) => mailboxConsumer.items,
+        { nullable: false, onDelete: 'RESTRICT' },
+    )
     @JoinColumn({
-        name: "mailbox_id"
+        name: "mailbox_consumer_id"
     })
-    mailbox: Mailbox;
-
-    @ManyToOne(() => Consumer, consumer => consumer.mailboxItems)
-    @JoinColumn({
-        name: "consumer_id"
-    })
-    consumer: Consumer;
+    mailboxConsumer: MailboxConsumer;
 
     @OneToOne(() => MailboxItemDeliverable, mailboxItemDeliverable => mailboxItemDeliverable.mailboxItem)
     mailboxItemDeliverable: MailboxItemDeliverable;
@@ -42,6 +39,9 @@ export class MailboxItem {
         }
     )
     status: MailboxItemStatus;
+
+    @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
+    receivedAt: Date;
 
     @Column({
         type: "boolean",

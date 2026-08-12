@@ -1,5 +1,5 @@
 import { Consumer } from "src/consumer/consumer.entity";
-import { Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 
 @Entity()
@@ -13,8 +13,10 @@ export class LawFirm {
     })
     consumer: Consumer;
 
+    @Column()
     ruc: string;
 
+    @Column()
     firm_name: string; // name
 
 }

@@ -10,7 +10,6 @@ import { UsersModule } from 'src/user/users.module';
 import { Business } from './types/business/business.entity';
 import { Individual } from './types/individual/individual.entity';
 import { LawFirm } from './types/law_firm/law-firm.entity';
-import { Procurator } from './types/procurator/procurator.entity';
 
 @Module({
   imports: [
@@ -19,7 +18,6 @@ import { Procurator } from './types/procurator/procurator.entity';
       Users,
       Business,
       Individual,
-      Procurator,
       LawFirm,
     ]),
     UsersModule,

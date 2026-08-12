@@ -7,7 +7,6 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { Mailbox, MailboxStatus } from "./mailbox.entity";
-import { Consumer } from "src/consumer/consumer.entity";
 import { CreateMailboxDto } from "./dtos/create-mailbox.dto";
 import { PaymentsService } from "src/payments/payments.service";
 
@@ -17,43 +16,22 @@ export class MailboxService {
         @InjectRepository(Mailbox)
         private readonly mailboxRepository: Repository<Mailbox>,
 
-        @InjectRepository(Consumer)
-        private readonly consumerRepository: Repository<Consumer>,
-
         private readonly paymentService: PaymentsService,
     ) {}
 
     async createMailbox(dto: CreateMailboxDto): Promise<Mailbox> {
-        const consumer = await this.consumerRepository.findOne({
-            where: {
-                id: dto.consumerId,
-            },
-        });
-
-        if (!consumer) {
-            throw new NotFoundException(
-                `Consumer with ID ${dto.consumerId} not found`,
-            );
-        }
-
         const existingMailbox = await this.mailboxRepository.findOne({
-            where: {
-                consumer: {
-                    id: dto.consumerId,
-                },
-                mailboxSite: dto.mailboxSite,
-            },
+            where: { mail_number: dto.mail_number },
         });
 
         if (existingMailbox) {
             throw new ConflictException(
-                "Mailbox already exists for this consumer and site",
+                "Mailbox code already exists",
             );
         }
 
         const mailbox = this.mailboxRepository.create({
             mail_number: dto.mail_number,
-            consumer,
             mailboxSite: dto.mailboxSite,
         });
 
@@ -65,7 +43,7 @@ export class MailboxService {
                 error.code === "ER_DUP_ENTRY"
             ) {
                 throw new ConflictException(
-                    "Mailbox already exists for this consumer and site",
+                    "Mailbox code already exists",
                 );
             }
 
@@ -103,30 +81,6 @@ export class MailboxService {
         }
 
         await this.mailboxRepository.softDelete(id);
-    }
-
-    async getMailboxesByConsumer(
-        consumerId: number,
-    ): Promise<Mailbox[]> {
-        const consumer = await this.consumerRepository.findOne({
-            where: {
-                id: consumerId,
-            },
-        });
-
-        if (!consumer) {
-            throw new NotFoundException(
-                `Consumer with ID ${consumerId} not found`,
-            );
-        }
-
-        return this.mailboxRepository.find({
-            where: {
-                consumer: {
-                    id: consumerId,
-                },
-            },
-        });
     }
 
     // Ejecutar cada 24 horas

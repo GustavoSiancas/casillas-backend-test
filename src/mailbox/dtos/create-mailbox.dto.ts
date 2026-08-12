@@ -1,13 +1,14 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { MailboxSite } from "src/mailbox/enum/mailbox.enum";
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateMailboxDto {
     @ApiProperty()
+    @IsString()
+    @IsNotEmpty()
     mail_number: string;
 
-    @ApiProperty()
-    consumerId: number;
-
-    @ApiProperty()
+    @ApiProperty({ enum: MailboxSite })
+    @IsEnum(MailboxSite)
     mailboxSite: MailboxSite;
 }

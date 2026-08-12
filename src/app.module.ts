@@ -10,6 +10,8 @@ import { PaymentsModule } from './payments/payment.module';
 import { MailboxModule } from './mailbox/mailbox.module';
 import { MailboxItemModule } from './mailbox_item/mailbox-item.module';
 import { ProcuratorModule } from './consumer/types/procurator/procurator.module';
+import { MailboxConsumerModule } from './mailbox_consumer/mailbox-consumer.module';
+import { MailboxProcuratorModule } from './mailbox_procurator/mailbox-procurator.module';
 
 @Module({
   
@@ -25,7 +27,7 @@ import { ProcuratorModule } from './consumer/types/procurator/procurator.module'
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: process.env.DB_SYNCHRONIZE === 'true',
     }),
     ConsumerModule,
     UsersModule,
@@ -34,6 +36,8 @@ import { ProcuratorModule } from './consumer/types/procurator/procurator.module'
     MailboxModule,
     MailboxItemModule,
     ProcuratorModule,
+    MailboxConsumerModule,
+    MailboxProcuratorModule,
   ],
   controllers: [AppController],
   providers: [AppService],
