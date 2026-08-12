@@ -1,6 +1,7 @@
 import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MailboxItemDeliverable } from "./mailbox_item_deliverable/mailbox-item-deliverable.entity";
+import { Mailbox } from "src/mailbox/mailbox.entity";
 
 export enum MailboxItemStatus {
     RECEIVED = "RECEIVED", // RECIBIDO POR EL AREA DE CASILLAS
@@ -20,12 +21,22 @@ export class MailboxItem {
     @ManyToOne(
         () => MailboxConsumer,
         (mailboxConsumer) => mailboxConsumer.items,
-        { nullable: false, onDelete: 'RESTRICT' },
+        { nullable: true, onDelete: 'RESTRICT' },
     )
     @JoinColumn({
         name: "mailbox_consumer_id"
     })
     mailboxConsumer: MailboxConsumer;
+
+    @ManyToOne(
+        ()=>Mailbox,
+        (mailbox)=>mailbox.mailboxItems,
+        {nullable: false, onDelete: 'RESTRICT'}
+    )
+    @JoinColumn({
+        name: "mailbox_id"
+    })
+    mailbox: Mailbox;
 
     @OneToOne(() => MailboxItemDeliverable, mailboxItemDeliverable => mailboxItemDeliverable.mailboxItem)
     mailboxItemDeliverable: MailboxItemDeliverable;

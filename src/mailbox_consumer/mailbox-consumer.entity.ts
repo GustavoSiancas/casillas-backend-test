@@ -20,6 +20,19 @@ export enum MailboxConsumerStatus {
     INACTIVE = 'INACTIVE',
 }
 
+export enum MailboxConsumerStatusReason {
+    PAID = 'PAID',
+    UNPAID = 'UNPAID'
+}
+
+// la logica de la casilla es que un consumidor esta conectado a la casilla ahora 
+// si en caso esta casilla no esta asignada a ningun consumidor, entonces el consumidor no tiene casilla asignada
+// si esta asignada pero ojo no esta pagada, sigue perteneciendo al consumidor pero la logica de negocio es q recibe items pero no los muestra nunca
+// ACTIVE y PAID = esta perfecto
+// ACTIVE y UNPAID = significa que sigue asignado pero no pagan osea recibe items pero no los muestra
+// INACTIVE y PAID = significa que ya no esta asignado pero si pago, osea que cerro la casilla de la mejor manera
+// INACTIVE y UNPAID = significa que ya no esta asignado y no pago, osea que cerro la casilla de la peor manera
+
 @Entity('mailbox_consumer')
 @Check(
     'CHK_mailbox_consumer_dates',
@@ -53,12 +66,23 @@ export class MailboxConsumer {
         (mailboxProcurator) => mailboxProcurator.mailboxConsumer,
     )
     mailboxProcurators: MailboxProcurator[];
-
+    
+    // The date when the mailbox was assigned to the consumer
     @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
     assignedAt: Date;
 
+    // The date when the mailbox was unassigned from the consumer, if applicable
     @Column({ type: 'datetime', nullable: true })
-    unassignedAt: Date | null;
+    unassignedAt: Date | null; // if is null, then the mailbox is still assigned to the consumer as active
+    // The reason for the status of the mailbox consumer
+    @Column({
+        type: 'enum',
+        enum: MailboxConsumerStatusReason,
+        default: MailboxConsumerStatusReason.PAID,
+    })
+    statusReason: MailboxConsumerStatusReason;
+
+    // The status of the mailbox consumer
 
     @Column({
         type: 'enum',

@@ -2,6 +2,7 @@ import { Payments } from "src/payments/payments.entity";
 import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MailboxSite } from "./enum/mailbox.enum";
+import { MailboxItem } from "src/mailbox_item/mailbox-item.entity";
 
 export enum MailboxStatus {
     ACTIVE = "ACTIVE",
@@ -22,6 +23,12 @@ export class Mailbox {
     )
     mailboxConsumers: MailboxConsumer[];
 
+    @OneToMany(
+        () => MailboxItem,
+        (mailboxItem) => mailboxItem.mailbox,
+    )
+    mailboxItems: MailboxItem[];
+
     @OneToMany(() => Payments, payments => payments.mailbox)
     payments: Payments[];
 
@@ -38,7 +45,7 @@ export class Mailbox {
         enum: MailboxStatus,
         default: MailboxStatus.ACTIVE
     })
-    status: MailboxStatus; // status of the mailbox, either ACTIVE or INACTIVE
+    status: MailboxStatus;// status of the mailbox, can be ACTIVE or INACTIVE a analizar
 
     @CreateDateColumn()
     createdAt: Date;
