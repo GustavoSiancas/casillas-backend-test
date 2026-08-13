@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Consumer } from 'src/consumer/consumer.entity';
+import { Consumer } from 'src/modules/mailbox/consumer/entities/consumer.entity';
 import { Mailbox } from 'src/mailbox/mailbox.entity';
 import { MailboxProcurator } from 'src/mailbox_procurator/mailbox-procurator.entity';
 import { MailboxConsumerController } from './mailbox-consumer.controller';

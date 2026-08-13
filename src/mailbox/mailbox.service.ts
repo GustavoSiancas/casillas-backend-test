@@ -8,7 +8,7 @@ import { Repository } from "typeorm";
 
 import { Mailbox, MailboxStatus } from "./mailbox.entity";
 import { CreateMailboxDto } from "./dtos/create-mailbox.dto";
-import { PaymentsService } from "src/payments/payments.service";
+import { PaymentsService } from "src/modules/extra/payments/payments.service";
 
 @Injectable()
 export class MailboxService {

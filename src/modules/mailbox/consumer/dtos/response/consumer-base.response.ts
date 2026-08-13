@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { Consumer, ConsumerType } from '../../consumer.entity';
+import { Consumer, ConsumerType } from '../../entities/consumer.entity';
 
 export class ConsumerBaseResponse {
     @ApiProperty()

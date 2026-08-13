@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Consumer, ConsumerType } from './consumer.entity';
+import { Consumer, ConsumerType } from './entities/consumer.entity';
 import { UserRole, Users } from 'src/modules/extra/users/users.entity';
 import { DataSource, Repository } from 'typeorm';
 import { UsersService } from 'src/modules/extra/users/users.service';
 import { CreateIndividualDto } from './dtos/request/create-individual.dto';
 import { UserResponse } from './dtos/response/user.response';
-import { Individual } from './types/individual/individual.entity';
+import { Individual } from './entities/individual.entity';
 import { CreateBusinessDto } from './dtos/request/create-business.dto';
-import { Business } from './types/business/business.entity';
+import { Business } from './entities/business.entity';
 import { CreateLawFirmDto } from './dtos/request/create-law-firm.dto';
-import { LawFirm } from './types/law_firm/law-firm.entity';
+import { LawFirm } from './entities/law-firm.entity';
 
 @Injectable()
 export class ConsumerService {

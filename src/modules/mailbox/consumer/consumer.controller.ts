@@ -15,7 +15,7 @@ import {
     getSchemaPath,
 } from '@nestjs/swagger';
 import { ConsumerService } from './consumer.service';
-import { Consumer, ConsumerType } from './consumer.entity';
+import { Consumer, ConsumerType } from './entities/consumer.entity';
 import { UserResponse } from './dtos/response/user.response';
 import { CreateIndividualDto } from './dtos/request/create-individual.dto';
 import { CreateLawFirmDto } from './dtos/request/create-law-firm.dto';

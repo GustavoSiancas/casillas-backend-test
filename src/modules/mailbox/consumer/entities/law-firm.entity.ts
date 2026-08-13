@@ -1,4 +1,4 @@
-import { Consumer } from "src/consumer/consumer.entity";
+import { Consumer } from "src/modules/mailbox/consumer/entities/consumer.entity";
 import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 
 

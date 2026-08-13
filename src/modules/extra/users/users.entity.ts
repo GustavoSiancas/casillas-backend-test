@@ -1,5 +1,5 @@
-import { Collaborator } from 'src/collaborator/collaborator.entity';
-import { Consumer } from 'src/consumer/consumer.entity';
+import { Collaborator } from 'src/modules/extra/collaborator/collaborator.entity';
+import { Consumer } from 'src/modules/mailbox/consumer/entities/consumer.entity';
 import { Entity, 
     PrimaryGeneratedColumn,
     Column,

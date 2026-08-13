@@ -3,7 +3,7 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { Consumer } from 'src/consumer/consumer.entity';
+import { Consumer } from 'src/modules/mailbox/consumer/entities/consumer.entity';
 import { Mailbox } from 'src/mailbox/mailbox.entity';
 import {
     MailboxProcurator,

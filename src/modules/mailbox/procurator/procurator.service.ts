@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Procurator } from './procurator.entity';
 import { DataSource } from 'typeorm';
-import { CreateProcuratorDto } from 'src/consumer/dtos/request/create-procurator.dto';
+import { CreateProcuratorDto } from 'src/modules/mailbox/consumer/dtos/request/create-procurator.dto';
 
 @Injectable()
 export class ProcuratorService {

@@ -1,5 +1,5 @@
 import { MailboxConsumer } from 'src/mailbox_consumer/mailbox-consumer.entity';
-import { Procurator } from 'src/consumer/types/procurator/procurator.entity';
+import { Procurator } from 'src/modules/mailbox/procurator/procurator.entity';
 import {
     Column,
     Check,

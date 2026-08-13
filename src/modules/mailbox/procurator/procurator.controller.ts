@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from "@nestjs/common";
 import { ProcuratorService } from "./procurator.service";
 import { Procurator } from "./procurator.entity";
-import { CreateProcuratorDto } from "src/consumer/dtos/request/create-procurator.dto";
+import { CreateProcuratorDto } from "src/modules/mailbox/consumer/dtos/request/create-procurator.dto";
 
 
 @Controller("procurator")

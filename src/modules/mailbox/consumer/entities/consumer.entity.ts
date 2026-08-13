@@ -1,8 +1,8 @@
 import { Users } from "src/modules/extra/users/users.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Business } from "./types/business/business.entity";
-import { Individual } from "./types/individual/individual.entity";
-import { LawFirm } from "./types/law_firm/law-firm.entity";
+import { Business } from "./business.entity";
+import { Individual } from "./individual.entity";
+import { LawFirm } from "./law-firm.entity";
 import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
 
 export enum Sex {

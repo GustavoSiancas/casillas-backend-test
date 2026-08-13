@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ProcuratorDocumentType } from "src/consumer/types/procurator/procurator.entity";
+import { ProcuratorDocumentType } from "src/modules/mailbox/procurator/procurator.entity";
 
 export class CreateProcuratorDto{
     @ApiProperty()

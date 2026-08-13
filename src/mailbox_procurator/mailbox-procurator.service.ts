@@ -3,7 +3,7 @@ import {
     Injectable,
     NotFoundException,
 } from '@nestjs/common';
-import { Procurator } from 'src/consumer/types/procurator/procurator.entity';
+import { Procurator } from 'src/modules/mailbox/procurator/procurator.entity';
 import {
     MailboxConsumer,
     MailboxConsumerStatus,

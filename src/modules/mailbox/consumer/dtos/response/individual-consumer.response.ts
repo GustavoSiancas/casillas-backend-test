@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Consumer } from '../../consumer.entity';
+import { Consumer } from '../../entities/consumer.entity';
 import { ConsumerBaseResponse } from './consumer-base.response';
 
 export class IndividualConsumerResponse extends ConsumerBaseResponse {

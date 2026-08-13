@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { Consumer } from './consumer.entity';
+import { Consumer } from './entities/consumer.entity';
 import { ConsumerController } from './consumer.controller';
 import { ConsumerService } from './consumer.service';
 import { Users } from 'src/modules/extra/users/users.entity';
 import { UsersModule } from 'src/modules/extra/users/users.module';
 
-import { Business } from './types/business/business.entity';
-import { Individual } from './types/individual/individual.entity';
-import { LawFirm } from './types/law_firm/law-firm.entity';
+import { Business } from './entities/business.entity';
+import { Individual } from './entities/individual.entity';
+import { LawFirm } from './entities/law-firm.entity';
 
 @Module({
   imports: [
