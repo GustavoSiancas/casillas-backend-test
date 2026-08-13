@@ -39,6 +39,4 @@ export class CollaboratorService {
             return await manager.save(collaborator);
         });
     }
-
-
 }

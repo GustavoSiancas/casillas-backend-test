@@ -6,7 +6,7 @@ import { UserRole } from 'src/modules/extra/users/enum/users-role.enum';
 import { DataSource, Repository } from 'typeorm';
 import { UsersService } from 'src/modules/extra/users/users.service';
 import { CreateIndividualDto } from './dto/request/create-individual.dto';
-import { UserResponse } from './dto/response/user.response';
+import { UserResponse } from '../../extra/users/dto/user.response';
 import { Individual } from './entities/individual.entity';
 import { CreateBusinessDto } from './dto/request/create-business.dto';
 import { Business } from './entities/business.entity';

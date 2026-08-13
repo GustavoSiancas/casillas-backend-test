@@ -16,7 +16,7 @@ import {
 } from '@nestjs/swagger';
 import { ConsumerService } from './consumer.service';
 import { Consumer, ConsumerType } from './entities/consumer.entity';
-import { UserResponse } from './dto/response/user.response';
+import { UserResponse } from '../../extra/users/dto/user.response';
 import { CreateIndividualDto } from './dto/request/create-individual.dto';
 import { CreateLawFirmDto } from './dto/request/create-law-firm.dto';
 import { CreateBusinessDto } from './dto/request/create-business.dto';
