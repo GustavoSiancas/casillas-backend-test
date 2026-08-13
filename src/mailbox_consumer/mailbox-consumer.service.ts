@@ -4,7 +4,7 @@ import {
     NotFoundException,
 } from '@nestjs/common';
 import { Consumer } from 'src/modules/mailbox/consumer/entities/consumer.entity';
-import { Mailbox } from 'src/mailbox/mailbox.entity';
+import { Mailbox } from 'src/modules/mailbox/mailboxes/mailbox.entity';
 import {
     MailboxProcurator,
     MailboxProcuratorStatus,

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Payments } from "./payments.entity";
 import { Repository } from "typeorm";
-import { Mailbox } from "src/mailbox/mailbox.entity";
+import { Mailbox } from "src/modules/mailbox/mailboxes/mailbox.entity";
 import { CreatePaymentDto } from "./dtos/create-payment.dto";
 
 

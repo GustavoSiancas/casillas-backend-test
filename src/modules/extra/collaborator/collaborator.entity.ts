@@ -1,4 +1,4 @@
-import { MailboxSite } from "src/mailbox/enum/mailbox.enum";
+import { MailboxSite } from "src/modules/mailbox/mailboxes/enum/mailbox.enum";
 import { MailboxItemDeliverable } from "src/modules/mailbox/items/entites/mailbox-item-deliverable.entity";
 import { Users } from "src/modules/extra/users/users.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";

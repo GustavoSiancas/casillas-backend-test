@@ -1,7 +1,7 @@
 import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MailboxItemDeliverable } from "./mailbox-item-deliverable.entity";
-import { Mailbox } from "src/mailbox/mailbox.entity";
+import { Mailbox } from "src/modules/mailbox/mailboxes/mailbox.entity";
 
 export enum MailboxItemStatus {
     RECEIVED = "RECEIVED", // RECIBIDO POR EL AREA DE CASILLAS

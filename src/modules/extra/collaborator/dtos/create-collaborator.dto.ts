@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { MailboxSite } from "src/mailbox/enum/mailbox.enum";
+import { MailboxSite } from "src/modules/mailbox/mailboxes/enum/mailbox.enum";
 
 export class CreateCollaboratorDto {
     @ApiProperty()

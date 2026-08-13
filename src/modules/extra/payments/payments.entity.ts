@@ -1,4 +1,4 @@
-import { Mailbox } from "src/mailbox/mailbox.entity";
+import { Mailbox } from "src/modules/mailbox/mailboxes/mailbox.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 // es una prueba de entity para payments q ojo no croe que se quede pero es para probar una funcionamiento
