@@ -18,8 +18,6 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 
-
-
 // la logica de la casilla es que un consumidor esta conectado a la casilla ahora 
 // si en caso esta casilla no esta asignada a ningun consumidor, entonces el consumidor no tiene casilla asignada
 // si esta asignada pero ojo no esta pagada, sigue perteneciendo al consumidor pero la logica de negocio es q recibe items pero no los muestra nunca

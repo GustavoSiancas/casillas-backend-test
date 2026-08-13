@@ -4,17 +4,7 @@ import { Business } from "./business.entity";
 import { Individual } from "./individual.entity";
 import { LawFirm } from "./law-firm.entity";
 import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbox-consumer.entity";
-
-export enum Sex {
-    MALE="MALE",
-    FEMALE="FEMALE"
-}
-
-export enum ConsumerType {
-    INDIVIDUAL="INDIVIDUAL",
-    LAW_FIRM ="LAW_FIRM",
-    BUSINESS="BUSINESS"
-}
+import { ConsumerType } from "../enum/consumer-type.enum";
 
 @Entity('consumer')
 export class Consumer {

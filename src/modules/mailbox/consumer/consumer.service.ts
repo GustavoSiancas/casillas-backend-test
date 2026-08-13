@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Consumer, ConsumerType } from './entities/consumer.entity';
+import { Consumer } from './entities/consumer.entity';
 import { Users } from 'src/modules/extra/users/users.entity';
 import { UserRole } from 'src/modules/extra/users/enum/users-role.enum';
 import { DataSource, Repository } from 'typeorm';
@@ -12,6 +12,7 @@ import { CreateBusinessDto } from './dto/request/create-business.dto';
 import { Business } from './entities/business.entity';
 import { CreateLawFirmDto } from './dto/request/create-law-firm.dto';
 import { LawFirm } from './entities/law-firm.entity';
+import { ConsumerType } from './enum/consumer-type.enum';
 
 @Injectable()
 export class ConsumerService {

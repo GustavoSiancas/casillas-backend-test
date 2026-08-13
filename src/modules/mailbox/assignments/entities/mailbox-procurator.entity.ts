@@ -14,8 +14,6 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 
-
-
 @Entity('mailbox_procurator')
 @Check(
     'CHK_mailbox_procurator_dates',

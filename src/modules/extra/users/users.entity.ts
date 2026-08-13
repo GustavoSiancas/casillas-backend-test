@@ -10,8 +10,6 @@ import { Entity,
     OneToOne
 } from 'typeorm';
 
-
-
 @Entity('users')
 export class Users {
     @PrimaryGeneratedColumn()

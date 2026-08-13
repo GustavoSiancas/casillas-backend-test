@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ConsumerType } from "../../entities/consumer.entity";
+import { ConsumerType } from "src/modules/mailbox/consumer/enum/consumer-type.enum";
 
 export class CreateBusinessDto {
 
