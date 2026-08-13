@@ -11,8 +11,8 @@ import {
 } from "@nestjs/common";
 
 import { MailboxService } from "./mailbox.service";
-import { CreateMailboxDto } from "./dtos/create-mailbox.dto";
-import { MailboxResponseDto } from './dtos/mailbox.response.dto';
+import { CreateMailboxDto } from "./dto/create-mailbox.dto";
+import { MailboxResponseDto } from './dto/mailbox.response.dto';
 
 @Controller("mailbox")
 export class MailboxController {

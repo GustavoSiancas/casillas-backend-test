@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Collaborator } from './collaborator.entity';
 import { DataSource, Repository } from 'typeorm';
 import { UserRole } from 'src/modules/extra/users/users.entity';
-import { CreateCollaboratorDto } from './dtos/create-collaborator.dto';
+import { CreateCollaboratorDto } from './dto/create-collaborator.dto';
 import { UsersService } from 'src/modules/extra/users/users.service';
 
 @Injectable()

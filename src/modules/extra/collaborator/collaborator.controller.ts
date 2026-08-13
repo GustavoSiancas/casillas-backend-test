@@ -1,5 +1,5 @@
 import { CollaboratorService } from "./collaborator.service";
-import { CreateCollaboratorDto } from "./dtos/create-collaborator.dto";
+import { CreateCollaboratorDto } from "./dto/create-collaborator.dto";
 import { Collaborator } from "./collaborator.entity";
 import { Body, Controller, Post } from "@nestjs/common";
 

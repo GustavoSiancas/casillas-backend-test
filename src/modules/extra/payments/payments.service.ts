@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Payments } from "./payments.entity";
 import { Repository } from "typeorm";
 import { Mailbox } from "src/modules/mailbox/mailboxes/mailbox.entity";
-import { CreatePaymentDto } from "./dtos/create-payment.dto";
+import { CreatePaymentDto } from "./dto/create-payment.dto";
 
 
 @Injectable()

@@ -7,7 +7,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
 import { Mailbox, MailboxStatus } from "./mailbox.entity";
-import { CreateMailboxDto } from "./dtos/create-mailbox.dto";
+import { CreateMailboxDto } from "./dto/create-mailbox.dto";
 import { PaymentsService } from "src/modules/extra/payments/payments.service";
 
 @Injectable()
