@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Consumer, ConsumerType } from './consumer.entity';
-import { UserRole, Users } from 'src/user/users.entity';
+import { UserRole, Users } from 'src/modules/extra/users/users.entity';
 import { DataSource, Repository } from 'typeorm';
-import { UsersService } from 'src/user/users.service';
+import { UsersService } from 'src/modules/extra/users/users.service';
 import { CreateIndividualDto } from './dtos/request/create-individual.dto';
 import { UserResponse } from './dtos/response/user.response';
 import { Individual } from './types/individual/individual.entity';

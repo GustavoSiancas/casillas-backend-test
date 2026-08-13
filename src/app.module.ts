@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersModule } from './user/users.module';
+import { UsersModule } from './modules/extra/users/users.module';
 import { CollaboratorModule } from './collaborator/collaborator.module';
 import { ConsumerModule } from './consumer/consumer.module';
 import { PaymentsModule } from './payments/payment.module';

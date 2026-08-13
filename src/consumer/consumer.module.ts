@@ -4,8 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Consumer } from './consumer.entity';
 import { ConsumerController } from './consumer.controller';
 import { ConsumerService } from './consumer.service';
-import { Users } from 'src/user/users.entity';
-import { UsersModule } from 'src/user/users.module';
+import { Users } from 'src/modules/extra/users/users.entity';
+import { UsersModule } from 'src/modules/extra/users/users.module';
 
 import { Business } from './types/business/business.entity';
 import { Individual } from './types/individual/individual.entity';

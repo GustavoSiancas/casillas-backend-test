@@ -4,8 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Collaborator } from './collaborator.entity';
 import { CollaboratorController } from './collaborator.controller';
 import { CollaboratorService } from './collaborator.service';
-import { Users } from 'src/user/users.entity';
-import { UsersModule } from 'src/user/users.module';
+import { Users } from 'src/modules/extra/users/users.entity';
+import { UsersModule } from 'src/modules/extra/users/users.module';
 
 @Module({
   imports: [
