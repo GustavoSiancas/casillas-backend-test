@@ -6,15 +6,11 @@ import {
 import { Consumer } from 'src/modules/mailbox/consumer/entities/consumer.entity';
 import { Mailbox } from 'src/modules/mailbox/mailboxes/mailbox.entity';
 import { Procurator } from 'src/modules/mailbox/procurator/procurator.entity';
-import {
-    MailboxProcurator,
-    MailboxProcuratorStatus,
-} from './entities/mailbox-procurator.entity';
+import { MailboxProcurator } from './entities/mailbox-procurator.entity';
 import { DataSource, EntityManager } from 'typeorm';
-import {
-    MailboxConsumer,
-    MailboxConsumerStatus,
-} from './entities/mailbox-consumer.entity';
+import { MailboxConsumer } from './entities/mailbox-consumer.entity';
+import { MailboxConsumerStatus } from './enum/mailbox-consumer-status.enum';
+import { MailboxProcuratorStatus } from './enum/mailbox-procurator-status.enum';
 
 @Injectable()
 export class AssignmentsService {

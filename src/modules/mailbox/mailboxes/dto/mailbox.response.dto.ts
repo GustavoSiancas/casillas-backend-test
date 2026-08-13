@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { MailboxSite } from '../enum/mailbox.enum';
-import { Mailbox, MailboxStatus } from '../mailbox.entity';
+import { Mailbox } from '../mailbox.entity';
+import { MailboxStatus } from '../enum/mailbox-status.enum';
 
 export class MailboxResponseDto {
     @ApiProperty()

@@ -1,5 +1,7 @@
 import { MailboxConsumer } from './mailbox-consumer.entity';
 import { Procurator } from 'src/modules/mailbox/procurator/procurator.entity';
+import { MailboxProcuratorStatus } from '../enum/mailbox-procurator-status.enum';
+
 import {
     Column,
     Check,
@@ -12,10 +14,7 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 
-export enum MailboxProcuratorStatus {
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
-}
+
 
 @Entity('mailbox_procurator')
 @Check(

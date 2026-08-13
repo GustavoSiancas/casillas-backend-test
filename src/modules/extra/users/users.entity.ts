@@ -1,5 +1,6 @@
 import { Collaborator } from 'src/modules/extra/collaborator/collaborator.entity';
 import { Consumer } from 'src/modules/mailbox/consumer/entities/consumer.entity';
+import { UserRole } from './enum/users-role.enum';
 import { Entity, 
     PrimaryGeneratedColumn,
     Column,
@@ -9,10 +10,7 @@ import { Entity,
     OneToOne
 } from 'typeorm';
 
-export enum UserRole {
-    COLLABORATOR='COLLABORATOR',
-    CONSUMER='CONSUMER'
-}
+
 
 @Entity('users')
 export class Users {

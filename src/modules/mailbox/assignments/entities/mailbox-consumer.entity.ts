@@ -2,6 +2,9 @@ import { Consumer } from 'src/modules/mailbox/consumer/entities/consumer.entity'
 import { Mailbox } from 'src/modules/mailbox/mailboxes/mailbox.entity';
 import { MailboxItem } from 'src/modules/mailbox/items/entites/mailbox-item.entity';
 import { MailboxProcurator } from './mailbox-procurator.entity';
+import { MailboxConsumerStatus } from '../enum/mailbox-consumer-status.enum';
+import { MailboxConsumerStatusReason } from '../enum/mailbox-consumer-status-reason.enum';
+
 import {
     Column,
     Check,
@@ -15,15 +18,7 @@ import {
     UpdateDateColumn,
 } from 'typeorm';
 
-export enum MailboxConsumerStatus {
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
-}
 
-export enum MailboxConsumerStatusReason {
-    PAID = 'PAID',
-    UNPAID = 'UNPAID'
-}
 
 // la logica de la casilla es que un consumidor esta conectado a la casilla ahora 
 // si en caso esta casilla no esta asignada a ningun consumidor, entonces el consumidor no tiene casilla asignada
