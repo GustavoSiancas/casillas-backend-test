@@ -12,10 +12,10 @@ import {
     Post,
 } from "@nestjs/common";
 
-import { MailboxItemService } from "./mailbox-item.service";
-import { CreateMailboxItemDto } from "./dtos/create-mailbox-item.dto";
-import { MailboxItemStatus } from "./mailbox-item.entity";
-import { MailboxItemResponseDto } from './dtos/mailbox-item.response.dto';
+import { MailboxItemService } from "./item.service";
+import { CreateMailboxItemDto } from "./dto/create-mailbox-item.dto";
+import { MailboxItemStatus } from "./entites/mailbox-item.entity";
+import { MailboxItemResponseDto } from './dto/mailbox-item.response.dto';
 
 @Controller("mailbox-items")
 export class MailboxItemController {

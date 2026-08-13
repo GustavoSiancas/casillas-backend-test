@@ -1,6 +1,6 @@
 import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { MailboxItemDeliverable } from "./mailbox_item_deliverable/mailbox-item-deliverable.entity";
+import { MailboxItemDeliverable } from "./mailbox-item-deliverable.entity";
 import { Mailbox } from "src/mailbox/mailbox.entity";
 
 export enum MailboxItemStatus {

@@ -1,9 +1,9 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { MailboxItem, MailboxItemStatus } from './mailbox-item.entity';
+import { MailboxItem, MailboxItemStatus } from './entites/mailbox-item.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Mailbox } from 'src/mailbox/mailbox.entity';
-import { CreateMailboxItemDto } from './dtos/create-mailbox-item.dto';
+import { CreateMailboxItemDto } from './dto/create-mailbox-item.dto';
 import { MailboxConsumer, MailboxConsumerStatus } from 'src/mailbox_consumer/mailbox-consumer.entity';
 
 @Injectable()

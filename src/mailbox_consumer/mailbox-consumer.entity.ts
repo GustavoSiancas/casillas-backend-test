@@ -1,6 +1,6 @@
 import { Consumer } from 'src/modules/mailbox/consumer/entities/consumer.entity';
 import { Mailbox } from 'src/mailbox/mailbox.entity';
-import { MailboxItem } from 'src/mailbox_item/mailbox-item.entity';
+import { MailboxItem } from 'src/modules/mailbox/items/entites/mailbox-item.entity';
 import { MailboxProcurator } from 'src/mailbox_procurator/mailbox-procurator.entity';
 import {
     Column,

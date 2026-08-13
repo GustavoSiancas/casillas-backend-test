@@ -16,17 +16,17 @@ import {
 } from '@nestjs/swagger';
 import { ConsumerService } from './consumer.service';
 import { Consumer, ConsumerType } from './entities/consumer.entity';
-import { UserResponse } from './dtos/response/user.response';
-import { CreateIndividualDto } from './dtos/request/create-individual.dto';
-import { CreateLawFirmDto } from './dtos/request/create-law-firm.dto';
-import { CreateBusinessDto } from './dtos/request/create-business.dto';
-import { IndividualConsumerResponse } from './dtos/response/individual-consumer.response';
-import { BusinessConsumerResponse } from './dtos/response/business-consumer.response';
-import { LawFirmConsumerResponse } from './dtos/response/law-firm-consumer.response';
+import { UserResponse } from './dto/response/user.response';
+import { CreateIndividualDto } from './dto/request/create-individual.dto';
+import { CreateLawFirmDto } from './dto/request/create-law-firm.dto';
+import { CreateBusinessDto } from './dto/request/create-business.dto';
+import { IndividualConsumerResponse } from './dto/response/individual-consumer.response';
+import { BusinessConsumerResponse } from './dto/response/business-consumer.response';
+import { LawFirmConsumerResponse } from './dto/response/law-firm-consumer.response';
 import {
     ConsumerDetailResponse,
     consumerResponseByType,
-} from './dtos/response/consumer-detail.response';
+} from './dto/response/consumer-detail.response';
 
 @ApiExtraModels(
     IndividualConsumerResponse,

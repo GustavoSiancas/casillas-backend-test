@@ -8,7 +8,7 @@ import { CollaboratorModule } from './modules/extra/collaborator/collaborator.mo
 import { ConsumerModule } from './modules/mailbox/consumer/consumer.module';
 import { PaymentsModule } from './modules/extra/payments/payment.module';
 import { MailboxModule } from './mailbox/mailbox.module';
-import { MailboxItemModule } from './mailbox_item/mailbox-item.module';
+import { MailboxItemModule } from './modules/mailbox/items/item.module';
 import { ProcuratorModule } from './modules/mailbox/procurator/procurator.module';
 import { MailboxConsumerModule } from './mailbox_consumer/mailbox-consumer.module';
 import { MailboxProcuratorModule } from './mailbox_procurator/mailbox-procurator.module';

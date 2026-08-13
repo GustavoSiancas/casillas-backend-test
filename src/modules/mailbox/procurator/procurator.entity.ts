@@ -1,4 +1,4 @@
-import { MailboxItemDeliverable } from "src/mailbox_item/mailbox_item_deliverable/mailbox-item-deliverable.entity";
+import { MailboxItemDeliverable } from "src/modules/mailbox/items/entites/mailbox-item-deliverable.entity";
 import { MailboxProcurator } from "src/mailbox_procurator/mailbox-procurator.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 

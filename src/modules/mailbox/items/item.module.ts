@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
-import { MailboxItem } from "./mailbox-item.entity";
+import { MailboxItem } from "./entites/mailbox-item.entity";
 import { Mailbox } from "src/mailbox/mailbox.entity";
-import { MailboxItemService } from "./mailbox-item.service";
-import { MailboxItemController } from "./mailbox-item.controller";
+import { MailboxItemService } from "./item.service";
+import { MailboxItemController } from "./item.controller";
 import { Procurator } from "src/modules/mailbox/procurator/procurator.entity";
-import { MailboxItemDeliverable } from "./mailbox_item_deliverable/mailbox-item-deliverable.entity";
+import { MailboxItemDeliverable } from "./entites/mailbox-item-deliverable.entity";
 import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
 
 @Module({

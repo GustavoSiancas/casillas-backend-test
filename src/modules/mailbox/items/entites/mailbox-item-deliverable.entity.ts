@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { MailboxItem } from "../mailbox-item.entity";
+import { MailboxItem } from "./mailbox-item.entity";
 import { Collaborator } from "src/modules/extra/collaborator/collaborator.entity";
 import { Procurator } from "src/modules/mailbox/procurator/procurator.entity";
 

@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MailboxItem, MailboxItemStatus } from '../mailbox-item.entity';
+import { MailboxItem, MailboxItemStatus } from '../entites/mailbox-item.entity';
 
 export class MailboxItemResponseDto {
     @ApiProperty()

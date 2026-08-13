@@ -4,12 +4,12 @@ import { Consumer, ConsumerType } from './entities/consumer.entity';
 import { UserRole, Users } from 'src/modules/extra/users/users.entity';
 import { DataSource, Repository } from 'typeorm';
 import { UsersService } from 'src/modules/extra/users/users.service';
-import { CreateIndividualDto } from './dtos/request/create-individual.dto';
-import { UserResponse } from './dtos/response/user.response';
+import { CreateIndividualDto } from './dto/request/create-individual.dto';
+import { UserResponse } from './dto/response/user.response';
 import { Individual } from './entities/individual.entity';
-import { CreateBusinessDto } from './dtos/request/create-business.dto';
+import { CreateBusinessDto } from './dto/request/create-business.dto';
 import { Business } from './entities/business.entity';
-import { CreateLawFirmDto } from './dtos/request/create-law-firm.dto';
+import { CreateLawFirmDto } from './dto/request/create-law-firm.dto';
 import { LawFirm } from './entities/law-firm.entity';
 
 @Injectable()
