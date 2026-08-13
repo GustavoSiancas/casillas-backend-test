@@ -10,8 +10,7 @@ import { PaymentsModule } from './modules/extra/payments/payment.module';
 import { MailboxModule } from './modules/mailbox/mailboxes/mailbox.module';
 import { MailboxItemModule } from './modules/mailbox/items/item.module';
 import { ProcuratorModule } from './modules/mailbox/procurator/procurator.module';
-import { MailboxConsumerModule } from './mailbox_consumer/mailbox-consumer.module';
-import { MailboxProcuratorModule } from './mailbox_procurator/mailbox-procurator.module';
+import { AssignmentsModule } from './modules/mailbox/assignments/assignments.module';
 
 @Module({
   
@@ -36,8 +35,7 @@ import { MailboxProcuratorModule } from './mailbox_procurator/mailbox-procurator
     MailboxModule,
     MailboxItemModule,
     ProcuratorModule,
-    MailboxConsumerModule,
-    MailboxProcuratorModule,
+    AssignmentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

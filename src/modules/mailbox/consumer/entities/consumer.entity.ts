@@ -3,7 +3,7 @@ import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMa
 import { Business } from "./business.entity";
 import { Individual } from "./individual.entity";
 import { LawFirm } from "./law-firm.entity";
-import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
+import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbox-consumer.entity";
 
 export enum Sex {
     MALE="MALE",

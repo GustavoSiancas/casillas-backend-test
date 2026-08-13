@@ -1,5 +1,5 @@
 import { Payments } from "src/modules/extra/payments/payments.entity";
-import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
+import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbox-consumer.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MailboxSite } from "./enum/mailbox.enum";
 import { MailboxItem } from "src/modules/mailbox/items/entites/mailbox-item.entity";

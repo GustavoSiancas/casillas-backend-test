@@ -1,5 +1,5 @@
 import { MailboxItemDeliverable } from "src/modules/mailbox/items/entites/mailbox-item-deliverable.entity";
-import { MailboxProcurator } from "src/mailbox_procurator/mailbox-procurator.entity";
+import { MailboxProcurator } from "src/modules/mailbox/assignments/entities/mailbox-procurator.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 export enum ProcuratorDocumentType {

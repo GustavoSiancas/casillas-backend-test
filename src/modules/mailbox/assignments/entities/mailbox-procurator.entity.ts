@@ -1,4 +1,4 @@
-import { MailboxConsumer } from 'src/mailbox_consumer/mailbox-consumer.entity';
+import { MailboxConsumer } from './mailbox-consumer.entity';
 import { Procurator } from 'src/modules/mailbox/procurator/procurator.entity';
 import {
     Column,

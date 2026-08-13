@@ -1,4 +1,4 @@
-import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
+import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbox-consumer.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MailboxItemDeliverable } from "./mailbox-item-deliverable.entity";
 import { Mailbox } from "src/modules/mailbox/mailboxes/mailbox.entity";

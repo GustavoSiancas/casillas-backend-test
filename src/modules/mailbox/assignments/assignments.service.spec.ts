@@ -5,10 +5,10 @@ import { DataSource } from 'typeorm';
 import {
     MailboxConsumer,
     MailboxConsumerStatus,
-} from './mailbox-consumer.entity';
-import { MailboxConsumerService } from './mailbox-consumer.service';
+} from './entities/mailbox-consumer.entity';
+import { AssignmentsService } from './assignments.service';
 
-describe('MailboxConsumerService', () => {
+describe('AssignmentsService', () => {
     it('impide crear dos asignaciones activas para una casilla', async () => {
         const manager = {
             findOne: jest.fn().mockResolvedValue({ id: 1 } as Mailbox),
@@ -17,7 +17,7 @@ describe('MailboxConsumerService', () => {
         const dataSource = {
             transaction: jest.fn((callback) => callback(manager)),
         } as unknown as DataSource;
-        const service = new MailboxConsumerService(dataSource);
+        const service = new AssignmentsService(dataSource);
 
         await expect(service.assignConsumerToMailbox(1, 2)).rejects.toBeInstanceOf(
             ConflictException,
@@ -45,7 +45,7 @@ describe('MailboxConsumerService', () => {
         const dataSource = {
             transaction: jest.fn((callback) => callback(manager)),
         } as unknown as DataSource;
-        const service = new MailboxConsumerService(dataSource);
+        const service = new AssignmentsService(dataSource);
 
         const result = await service.assignConsumerToMailbox(1, 2);
 

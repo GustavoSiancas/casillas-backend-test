@@ -6,7 +6,7 @@ import { MailboxItemService } from "./item.service";
 import { MailboxItemController } from "./item.controller";
 import { Procurator } from "src/modules/mailbox/procurator/procurator.entity";
 import { MailboxItemDeliverable } from "./entites/mailbox-item-deliverable.entity";
-import { MailboxConsumer } from "src/mailbox_consumer/mailbox-consumer.entity";
+import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbox-consumer.entity";
 
 @Module({
     imports: [
