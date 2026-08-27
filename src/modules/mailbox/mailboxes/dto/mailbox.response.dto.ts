@@ -8,7 +8,7 @@ export class MailboxResponseDto {
     id: number;
 
     @ApiProperty()
-    mailNumber: string;
+    mailNumber: number;
 
     @ApiProperty({ enum: MailboxSite })
     mailboxSite: MailboxSite;

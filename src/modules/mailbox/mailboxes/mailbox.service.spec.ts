@@ -30,14 +30,14 @@ describe('MailboxService', () => {
 
         await expect(
             service.createMailbox({
-                mail_number: '101',
+                mail_number: 101,
                 mailboxSite: MailboxSite.MIRAFLORES,
             }),
         ).rejects.toBeInstanceOf(ConflictException);
 
         expect(repository.findOne).toHaveBeenCalledWith({
             where: {
-                mail_number: '101',
+                mail_number: 101,
                 mailboxSite: MailboxSite.MIRAFLORES,
             },
         });
@@ -45,7 +45,7 @@ describe('MailboxService', () => {
 
     it('allows the same mail number when no mailbox exists at that site', async () => {
         const mailbox = {
-            mail_number: '101',
+            mail_number: 101,
             mailboxSite: MailboxSite.MIRAFLORES,
         } as Mailbox;
         repository.findOne.mockResolvedValue(null);
@@ -54,7 +54,7 @@ describe('MailboxService', () => {
 
         await expect(
             service.createMailbox({
-                mail_number: '101',
+                mail_number: 101,
                 mailboxSite: MailboxSite.MIRAFLORES,
             }),
         ).resolves.toBe(mailbox);
@@ -67,7 +67,7 @@ describe('MailboxService', () => {
 
         await expect(
             service.createMailbox({
-                mail_number: '101',
+                mail_number: 101,
                 mailboxSite: MailboxSite.MIRAFLORES,
             }),
         ).rejects.toBeInstanceOf(ConflictException);
@@ -82,7 +82,7 @@ describe('MailboxService', () => {
                 2,
                 5,
                 undefined,
-                '101',
+                101,
                 MailboxSite.MIRAFLORES,
             ),
         ).resolves.toEqual({
@@ -99,12 +99,12 @@ describe('MailboxService', () => {
 
         expect(repository.findAndCount).toHaveBeenCalledWith({
             where: {
-                mail_number: '101',
+                mail_number: 101,
                 mailboxSite: MailboxSite.MIRAFLORES,
             },
             skip: 5,
             take: 5,
-            order: { id: 'ASC' },
+            order: { updatedAt: 'DESC' },
         });
     });
 

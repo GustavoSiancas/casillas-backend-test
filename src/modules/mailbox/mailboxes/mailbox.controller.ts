@@ -54,14 +54,15 @@ export class MailboxController {
     @ApiQuery({ name: 'page', required: false, type: Number })
     @ApiQuery({ name: 'limit', required: false, type: Number })
     @ApiQuery({ name: 'status', required: false, enum: MailboxStatus })
-    @ApiQuery({ name: 'mail_number', required: false, type: String })
+    @ApiQuery({ name: 'mail_number', required: false, type: Number })
     @ApiQuery({ name: 'mailboxSite', required: false, enum: MailboxSite })
     async getAllMailboxes(
         @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
         @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
         @Query('status', new ParseEnumPipe(MailboxStatus, { optional: true }))
         status?: MailboxStatus,
-        @Query('mail_number') mail_number?: string,
+        @Query('mail_number', new ParseIntPipe({ optional: true }))
+        mail_number?: number,
         @Query(
             'mailboxSite',
             new ParseEnumPipe(MailboxSite, { optional: true }),

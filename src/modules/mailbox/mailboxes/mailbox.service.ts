@@ -63,7 +63,7 @@ export class MailboxService {
         page: number,
         limit: number,
         status?: MailboxStatus,
-        mail_number?: string,
+        mail_number?: number,
         mailboxSite?: MailboxSite,
     ): Promise<PaginatedResponse<Mailbox>> {
         const where: FindOptionsWhere<Mailbox> = {};
@@ -76,7 +76,7 @@ export class MailboxService {
             where,
             skip: (page - 1) * limit,
             take: limit,
-            order: { id: 'ASC' },
+            order: { updatedAt: 'DESC' },
         });
 
         return new PaginatedResponse(
