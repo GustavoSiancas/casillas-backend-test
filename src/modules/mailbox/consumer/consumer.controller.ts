@@ -1,21 +1,24 @@
 import {
     Body,
     Controller,
+    DefaultValuePipe,
     Get,
     NotFoundException,
     Param,
     ParseEnumPipe,
+    ParseIntPipe,
     Post,
+    Query,
 } from '@nestjs/common';
 import {
     ApiExtraModels,
     ApiNotFoundResponse,
     ApiOkResponse,
     ApiParam,
+    ApiQuery,
     getSchemaPath,
 } from '@nestjs/swagger';
 import { ConsumerService } from './consumer.service';
-import { Consumer } from './entities/consumer.entity';
 import { UserResponse } from '../../extra/users/dto/user.response';
 import { CreateIndividualDto } from './dto/request/create-individual.dto';
 import { CreateLawFirmDto } from './dto/request/create-law-firm.dto';
@@ -28,6 +31,8 @@ import {
     ConsumerDetailResponse,
     consumerResponseByType,
 } from './dto/response/consumer-detail.response';
+import { PaginatedResponse } from 'src/common/dtos/pages/pagination.response';
+import { ConsumerBaseResponse } from './dto/response/consumer-base.response';
 
 @ApiExtraModels(
     IndividualConsumerResponse,
@@ -62,8 +67,38 @@ export class ConsumerController {
     }
 
     @Get('all')
-    async getAllConsumers(): Promise<Consumer[]> {
-        return this.consumerService.getAllConsumers();
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'numberID', required: false, type: String })
+    @ApiQuery({ name: 'name', required: false, type: String })
+    @ApiQuery({ name: 'consumerType', required: false, enum: ConsumerType })
+    async getAllConsumers(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+        @Query('numberID') numberID?: string,
+        @Query('name') name?: string,
+        @Query(
+            'consumerType',
+            new ParseEnumPipe(ConsumerType, { optional: true }),
+        )
+        consumerType?: ConsumerType,
+    ): Promise<PaginatedResponse<ConsumerBaseResponse>> {
+        const normalizedPage = Math.max(page, 1);
+        const normalizedLimit = Math.min(Math.max(limit, 1), 100);
+        const result = await this.consumerService.getAllConsumers(
+            normalizedPage,
+            normalizedLimit,
+            numberID,
+            name,
+            consumerType,
+        );
+
+        return new PaginatedResponse(
+            result.data.map((consumer) =>
+                ConsumerBaseResponse.fromEntity(consumer),
+            ),
+            result.pagination,
+        );
     }
 
     @Get('unique/:consumerType/:data')

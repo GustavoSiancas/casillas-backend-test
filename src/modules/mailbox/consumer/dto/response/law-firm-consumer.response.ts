@@ -12,8 +12,8 @@ export class LawFirmConsumerResponse extends ConsumerBaseResponse {
     static fromEntity(consumer: Consumer): LawFirmConsumerResponse {
         return {
             ...this.getBaseData(consumer),
-            ruc: consumer.lawFirm.ruc,
-            firm_name: consumer.lawFirm.firm_name,
+            ruc: consumer.numberID,
+            firm_name: consumer.name,
         };
     }
 }

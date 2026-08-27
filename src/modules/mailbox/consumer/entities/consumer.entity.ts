@@ -1,5 +1,5 @@
 import { Users } from "src/modules/extra/users/users.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, Index, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { Business } from "./business.entity";
 import { Individual } from "./individual.entity";
 import { LawFirm } from "./law-firm.entity";
@@ -7,6 +7,8 @@ import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbo
 import { ConsumerType } from "../enum/consumer-type.enum";
 
 @Entity('consumer')
+@Index('UQ_consumer_number_id', ['numberID'], { unique: true })
+@Index('IDX_consumer_name', ['name'])
 export class Consumer {
     @PrimaryGeneratedColumn()
     id: number;
@@ -24,6 +26,12 @@ export class Consumer {
         }
     )
     consumerType: ConsumerType;
+
+    @Column({ name: 'number_id' })
+    numberID: string;
+
+    @Column()
+    name: string;
 
     @Column(
         {

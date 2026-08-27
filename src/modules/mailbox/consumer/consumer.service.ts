@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Consumer } from './entities/consumer.entity';
 import { Users } from 'src/modules/extra/users/users.entity';
 import { UserRole } from 'src/modules/extra/users/enum/users-role.enum';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, FindOptionsWhere, Like, Repository } from 'typeorm';
 import { UsersService } from 'src/modules/extra/users/users.service';
 import { CreateIndividualDto } from './dto/request/create-individual.dto';
 import { UserResponse } from '../../extra/users/dto/user.response';
@@ -13,6 +13,8 @@ import { Business } from './entities/business.entity';
 import { CreateLawFirmDto } from './dto/request/create-law-firm.dto';
 import { LawFirm } from './entities/law-firm.entity';
 import { ConsumerType } from './enum/consumer-type.enum';
+import { PaginatedResponse } from 'src/common/dtos/pages/pagination.response';
+import { PaginationMetaResponse } from 'src/common/dtos/pages/pagination.meta.response';
 
 @Injectable()
 export class ConsumerService {
@@ -40,6 +42,8 @@ export class ConsumerService {
 
             const consumer = manager.create(Consumer, {
                 consumerType: ConsumerType.INDIVIDUAL,
+                numberID: dto.dni,
+                name: dto.full_name,
                 email: dto.email,
                 phone: dto.phone,
                 principal_phone: dto.principal_phone,
@@ -81,6 +85,8 @@ export class ConsumerService {
 
             const consumer = manager.create(Consumer, {
                 consumerType: ConsumerType.BUSINESS,
+                numberID: dto.ruc,
+                name: dto.social_reason,
                 email: dto.email,
                 phone: dto.phone,
                 principal_phone: dto.principal_phone,
@@ -121,6 +127,8 @@ export class ConsumerService {
 
             const consumer = manager.create(Consumer, {
                 consumerType: ConsumerType.LAW_FIRM,
+                numberID: dto.ruc,
+                name: dto.firm_name,
                 email: dto.email,
                 phone: dto.phone,
                 principal_phone: dto.principal_phone,
@@ -146,8 +154,33 @@ export class ConsumerService {
         });
     }
 
-    async getAllConsumers(): Promise<Consumer[]> {
-        return this.consumerRepository.find();
+    async getAllConsumers(
+        page: number,
+        limit: number,
+        numberID?: string,
+        name?: string,
+        consumerType?: ConsumerType,
+    ): Promise<PaginatedResponse<Consumer>> {
+        const where: FindOptionsWhere<Consumer> = {};
+
+        if (numberID !== undefined) where.numberID = numberID;
+        if (name !== undefined) where.name = Like(`%${name}%`);
+        if (consumerType !== undefined) where.consumerType = consumerType;
+
+        const [consumers, total] = await this.consumerRepository.findAndCount({
+            where,
+            skip: (page - 1) * limit,
+            take: limit,
+            order: {
+                updatedAt: 'DESC',
+                id: 'DESC',
+            },
+        });
+
+        return new PaginatedResponse(
+            consumers,
+            new PaginationMetaResponse(page, limit, total),
+        );
     }
 
     async getConsumerWithDataUnique(
@@ -159,7 +192,7 @@ export class ConsumerService {
                 return this.consumerRepository.findOne({
                     where: {
                         consumerType,
-                        individual: { dni: data },
+                        numberID: data,
                     },
                     relations: { individual: true },
                 });
@@ -168,7 +201,7 @@ export class ConsumerService {
                 return this.consumerRepository.findOne({
                     where: {
                         consumerType,
-                        business: { ruc: data },
+                        numberID: data,
                     },
                     relations: { business: true },
                 });
@@ -177,7 +210,7 @@ export class ConsumerService {
                 return this.consumerRepository.findOne({
                     where: {
                         consumerType,
-                        lawFirm: { ruc: data },
+                        numberID: data,
                     },
                     relations: { lawFirm: true },
                 });

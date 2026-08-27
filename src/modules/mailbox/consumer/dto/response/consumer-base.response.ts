@@ -9,6 +9,12 @@ export class ConsumerBaseResponse {
     @ApiProperty({ enum: ConsumerType })
     consumerType: ConsumerType;
 
+    @ApiProperty({ description: 'DNI o RUC del consumidor' })
+    numberID: string;
+
+    @ApiProperty({ description: 'Nombre completo o razón social' })
+    name: string;
+
     @ApiProperty()
     email: string;
 
@@ -34,6 +40,8 @@ export class ConsumerBaseResponse {
         return {
             id: consumer.id,
             consumerType: consumer.consumerType,
+            numberID: consumer.numberID,
+            name: consumer.name,
             email: consumer.email,
             phone: consumer.phone,
             principal_phone: consumer.principal_phone,
@@ -42,5 +50,9 @@ export class ConsumerBaseResponse {
             createdAt: consumer.createdAt,
             updatedAt: consumer.updatedAt,
         };
+    }
+
+    static fromEntity(consumer: Consumer): ConsumerBaseResponse {
+        return ConsumerBaseResponse.getBaseData(consumer);
     }
 }

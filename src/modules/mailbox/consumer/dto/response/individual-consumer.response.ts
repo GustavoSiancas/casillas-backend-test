@@ -15,8 +15,8 @@ export class IndividualConsumerResponse extends ConsumerBaseResponse {
     static fromEntity(consumer: Consumer): IndividualConsumerResponse {
         return {
             ...this.getBaseData(consumer),
-            dni: consumer.individual.dni,
-            full_name: consumer.individual.full_name,
+            dni: consumer.numberID,
+            full_name: consumer.name,
             cal_number: consumer.individual.cal_number,
         };
     }

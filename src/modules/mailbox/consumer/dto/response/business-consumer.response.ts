@@ -12,8 +12,8 @@ export class BusinessConsumerResponse extends ConsumerBaseResponse {
     static fromEntity(consumer: Consumer): BusinessConsumerResponse {
         return {
             ...this.getBaseData(consumer),
-            ruc: consumer.business.ruc,
-            social_reason: consumer.business.social_reason,
+            ruc: consumer.numberID,
+            social_reason: consumer.name,
         };
     }
 }
