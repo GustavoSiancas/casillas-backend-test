@@ -126,6 +126,11 @@ export class MailboxItemService {
         const previousStatus = mailboxItem.status;
 
         if (mailboxItem.status === MailboxItemStatus.RECEIVED && nextStatus === MailboxItemStatus.ON_VIEW) {
+            if (mailboxItem.accessStatus !== MailboxItemAccessStatus.VISIBLE) {
+                throw new ConflictException(
+                    'El item no está habilitado para mostrarse al consumidor',
+                );
+            }
             mailboxItem.status = nextStatus;
         } else if (mailboxItem.status === MailboxItemStatus.ON_VIEW && nextStatus === MailboxItemStatus.REQUESTED) {
             mailboxItem.status = nextStatus;
@@ -152,6 +157,16 @@ export class MailboxItemService {
         }
 
         const previousStatus = mailboxItem.status;
+
+        if (
+            mailboxItem.accessStatus !== MailboxItemAccessStatus.VISIBLE ||
+            mailboxItem.mailboxConsumer?.status !==
+                MailboxConsumerStatus.ACTIVE
+        ) {
+            throw new ConflictException(
+                'El item no está disponible para el consumidor',
+            );
+        }
 
         if (mailboxItem.status === MailboxItemStatus.ON_VIEW && nextStatus === MailboxItemStatus.REQUESTED) {
             mailboxItem.status = nextStatus;
