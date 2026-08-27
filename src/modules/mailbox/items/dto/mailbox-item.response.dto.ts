@@ -1,12 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { MailboxItem, MailboxItemStatus } from '../entites/mailbox-item.entity';
+import {
+    MailboxItem,
+    MailboxItemAccessStatus,
+    MailboxItemStatus,
+} from '../entites/mailbox-item.entity';
 
 export class MailboxItemResponseDto {
     @ApiProperty()
     id: number;
 
     @ApiProperty()
-    mailboxConsumerId: number;
+    mailboxConsumerId: number | null;
+
+    @ApiProperty({ nullable: true })
+    consumerId: number | null;
+
+    @ApiProperty()
+    mailboxId: number;
 
     @ApiProperty()
     title: string;
@@ -16,6 +26,9 @@ export class MailboxItemResponseDto {
 
     @ApiProperty({ enum: MailboxItemStatus })
     status: MailboxItemStatus;
+
+    @ApiProperty({ enum: MailboxItemAccessStatus })
+    accessStatus: MailboxItemAccessStatus;
 
     @ApiProperty()
     isActive: boolean;
@@ -32,10 +45,13 @@ export class MailboxItemResponseDto {
     static fromEntity(item: MailboxItem): MailboxItemResponseDto {
         return {
             id: item.id,
-            mailboxConsumerId: item.mailboxConsumer.id,
+            mailboxConsumerId: item.mailboxConsumer?.id ?? null,
+            consumerId: item.mailboxConsumer?.consumer?.id ?? null,
+            mailboxId: item.mailbox.id,
             title: item.title,
             description: item.description,
             status: item.status,
+            accessStatus: item.accessStatus,
             isActive: item.isActive,
             receivedAt: item.receivedAt,
             createdAt: item.createdAt,

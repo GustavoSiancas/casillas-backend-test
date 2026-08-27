@@ -46,6 +46,16 @@ export class MailboxItemController {
         return items.map(MailboxItemResponseDto.fromEntity);
     }
 
+    @Get('consumer/:consumerId/visible')
+    async getVisibleItemsByConsumer(
+        @Param('consumerId', ParseIntPipe) consumerId: number,
+    ): Promise<MailboxItemResponseDto[]> {
+        const items = await this.mailboxItemService.getVisibleItemsByConsumer(
+            consumerId,
+        );
+        return items.map(MailboxItemResponseDto.fromEntity);
+    }
+
     @Get(":id")
     async getMailboxItemById(
         @Param("id", ParseIntPipe) id: number,

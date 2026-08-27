@@ -6,6 +6,31 @@ import { ConsumerType } from './enum/consumer-type.enum';
 import { ConsumerBaseResponse } from './dto/response/consumer-base.response';
 
 describe('ConsumerService', () => {
+    it('returns a consumer by id with its type relations', async () => {
+        const consumer = {
+            id: 7,
+            consumerType: ConsumerType.BUSINESS,
+        } as Consumer;
+        const repository = {
+            findOne: jest.fn().mockResolvedValue(consumer),
+        } as unknown as jest.Mocked<Repository<Consumer>>;
+        const service = new ConsumerService(
+            repository,
+            {} as DataSource,
+            {} as UsersService,
+        );
+
+        await expect(service.getConsumerById(7)).resolves.toBe(consumer);
+        expect(repository.findOne).toHaveBeenCalledWith({
+            where: { id: 7 },
+            relations: {
+                individual: true,
+                business: true,
+                lawFirm: true,
+            },
+        });
+    });
+
     it('maps a consumer response when fromEntity is used as a callback', () => {
         const consumer = {
             id: 7,

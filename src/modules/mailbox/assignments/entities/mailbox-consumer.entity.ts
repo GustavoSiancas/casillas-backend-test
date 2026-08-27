@@ -32,7 +32,7 @@ import {
     '`unassignedAt` IS NULL OR `unassignedAt` >= `assignedAt`',
 )
 @Index('IDX_mailbox_consumer_mailbox_status', ['mailbox', 'status'])
-@Index('IDX_mailbox_consumer_consumer', ['consumer'])
+@Index('IDX_mailbox_consumer_consumer_status', ['consumer', 'status'])
 export class MailboxConsumer {
     @PrimaryGeneratedColumn()
     id: number;

@@ -5,6 +5,7 @@ import { Individual } from "./individual.entity";
 import { LawFirm } from "./law-firm.entity";
 import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbox-consumer.entity";
 import { ConsumerType } from "../enum/consumer-type.enum";
+import { Procurator } from "../../procurator/procurator.entity";
 
 @Entity('consumer')
 @Index('UQ_consumer_number_id', ['numberID'], { unique: true })
@@ -68,6 +69,9 @@ export class Consumer {
         (mailboxConsumer) => mailboxConsumer.consumer,
     )
     mailboxConsumers: MailboxConsumer[];
+
+    @OneToMany(() => Procurator, (procurator) => procurator.consumer)
+    procurators: Procurator[];
 
     @CreateDateColumn()
     createdAt: Date;

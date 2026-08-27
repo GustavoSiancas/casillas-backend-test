@@ -1,11 +1,16 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { MailboxItem, MailboxItemStatus } from './entites/mailbox-item.entity';
+import {
+    MailboxItem,
+    MailboxItemAccessStatus,
+    MailboxItemStatus,
+} from './entites/mailbox-item.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Mailbox } from 'src/modules/mailbox/mailboxes/mailbox.entity';
 import { CreateMailboxItemDto } from './dto/create-mailbox-item.dto';
 import { MailboxConsumer } from 'src/modules/mailbox/assignments/entities/mailbox-consumer.entity';
 import { MailboxConsumerStatus } from 'src/modules/mailbox/assignments/enum/mailbox-consumer-status.enum';
+import { MailboxConsumerStatusReason } from 'src/modules/mailbox/assignments/enum/mailbox-consumer-status-reason.enum';
 
 @Injectable()
 export class MailboxItemService {
@@ -29,21 +34,28 @@ export class MailboxItemService {
                 throw new NotFoundException(`Mailbox with ID ${mailboxId} not found`);
             }
 
-            const assignment = await manager.findOneBy(MailboxConsumer, {
-                mailbox: { id: mailboxId },
-                status: MailboxConsumerStatus.ACTIVE,
+            const assignment = await manager.findOne(MailboxConsumer, {
+                where: {
+                    mailbox: { id: mailboxId },
+                    status: MailboxConsumerStatus.ACTIVE,
+                },
+                relations: { consumer: true },
             });
-            if (!assignment) {
-                throw new ConflictException(
-                    'La casilla no tiene un consumidor activo',
-                );
-            }
+
+            const accessStatus = !assignment
+                ? MailboxItemAccessStatus.UNASSIGNED
+                : assignment.statusReason === MailboxConsumerStatusReason.PAID
+                  ? MailboxItemAccessStatus.VISIBLE
+                  : MailboxItemAccessStatus.BLOCKED_UNPAID;
 
             return manager.save(
                 manager.create(MailboxItem, {
                     title: dto.title,
                     description: dto.description,
-                    mailboxConsumer: assignment,
+                    mailbox,
+                    mailboxConsumer: assignment ?? null,
+                    status: MailboxItemStatus.RECEIVED,
+                    accessStatus,
                     receivedAt: new Date(),
                 }),
             );
@@ -53,7 +65,10 @@ export class MailboxItemService {
     async getMailboxItemById(id: number): Promise<MailboxItem> {
         const mailboxItem = await this.mailboxItemRepository.findOne({
             where: { id },
-            relations: { mailboxConsumer: true },
+            relations: {
+                mailbox: true,
+                mailboxConsumer: { consumer: true },
+            },
         });
 
         if (!mailboxItem) {
@@ -68,7 +83,29 @@ export class MailboxItemService {
     ): Promise<MailboxItem[]> {
         return this.mailboxItemRepository.find({
             where: { mailboxConsumer: { id: mailboxConsumerId } },
-            relations: { mailboxConsumer: true },
+            relations: {
+                mailbox: true,
+                mailboxConsumer: { consumer: true },
+            },
+            order: { receivedAt: 'DESC' },
+        });
+    }
+
+    async getVisibleItemsByConsumer(
+        consumerId: number,
+    ): Promise<MailboxItem[]> {
+        return this.mailboxItemRepository.find({
+            where: {
+                accessStatus: MailboxItemAccessStatus.VISIBLE,
+                mailboxConsumer: {
+                    consumer: { id: consumerId },
+                    status: MailboxConsumerStatus.ACTIVE,
+                },
+            },
+            relations: {
+                mailbox: true,
+                mailboxConsumer: { consumer: true },
+            },
             order: { receivedAt: 'DESC' },
         });
     }
@@ -76,7 +113,10 @@ export class MailboxItemService {
     async updateMailboxItemStatusAsCollaborator(id: number, nextStatus: MailboxItemStatus): Promise<MailboxItem> {
         const mailboxItem = await this.mailboxItemRepository.findOne({
             where: { id },
-            relations: { mailboxConsumer: true },
+            relations: {
+                mailbox: true,
+                mailboxConsumer: { consumer: true },
+            },
         });
 
         if (!mailboxItem) {
@@ -101,7 +141,10 @@ export class MailboxItemService {
     async updateMailboxItemStatusAsConsumer(id: number, nextStatus: MailboxItemStatus): Promise<MailboxItem> {
         const mailboxItem = await this.mailboxItemRepository.findOne({
             where: { id },
-            relations: { mailboxConsumer: true },
+            relations: {
+                mailbox: true,
+                mailboxConsumer: { consumer: true },
+            },
         });
 
         if (!mailboxItem) {

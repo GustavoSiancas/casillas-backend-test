@@ -10,6 +10,12 @@ export enum MailboxItemStatus {
     DELIVERED = "DELIVERED", // ENTREGADO
 }
 
+export enum MailboxItemAccessStatus {
+    VISIBLE = 'VISIBLE',
+    BLOCKED_UNPAID = 'BLOCKED_UNPAID',
+    UNASSIGNED = 'UNASSIGNED',
+}
+
 @Entity('mailbox_item') 
 export class MailboxItem {
     @PrimaryGeneratedColumn()
@@ -26,7 +32,7 @@ export class MailboxItem {
     @JoinColumn({
         name: "mailbox_consumer_id"
     })
-    mailboxConsumer: MailboxConsumer;
+    mailboxConsumer: MailboxConsumer | null;
 
     @ManyToOne(
         ()=>Mailbox,
@@ -50,6 +56,13 @@ export class MailboxItem {
         }
     )
     status: MailboxItemStatus;
+
+    @Column({
+        type: 'enum',
+        enum: MailboxItemAccessStatus,
+        default: MailboxItemAccessStatus.UNASSIGNED,
+    })
+    accessStatus: MailboxItemAccessStatus;
 
     @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
     receivedAt: Date;

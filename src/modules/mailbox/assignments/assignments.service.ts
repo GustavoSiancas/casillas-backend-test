@@ -7,7 +7,7 @@ import { Consumer } from 'src/modules/mailbox/consumer/entities/consumer.entity'
 import { Mailbox } from 'src/modules/mailbox/mailboxes/mailbox.entity';
 import { Procurator } from 'src/modules/mailbox/procurator/procurator.entity';
 import { MailboxProcurator } from './entities/mailbox-procurator.entity';
-import { DataSource, EntityManager } from 'typeorm';
+import { DataSource, EntityManager, IsNull } from 'typeorm';
 import { MailboxConsumer } from './entities/mailbox-consumer.entity';
 import { MailboxConsumerStatus } from './enum/mailbox-consumer-status.enum';
 import { MailboxProcuratorStatus } from './enum/mailbox-procurator-status.enum';
@@ -15,6 +15,64 @@ import { MailboxProcuratorStatus } from './enum/mailbox-procurator-status.enum';
 @Injectable()
 export class AssignmentsService {
     constructor(private readonly dataSource: DataSource) {}
+
+    async getActiveProcuratorsByConsumer(
+        consumerId: number,
+    ): Promise<{
+        hasProcurators: boolean;
+        assignments: MailboxProcurator[];
+    }> {
+        await this.ensureConsumerExists(consumerId);
+
+        const assignments = await this.dataSource.manager.find(
+            MailboxProcurator,
+            {
+                where: {
+                    status: MailboxProcuratorStatus.ACTIVE,
+                    mailboxConsumer: {
+                        consumer: { id: consumerId },
+                        status: MailboxConsumerStatus.ACTIVE,
+                    },
+                },
+                relations: {
+                    procurator: true,
+                    mailboxConsumer: { mailbox: true },
+                },
+                order: { assignedAt: 'DESC' },
+            },
+        );
+
+        return {
+            hasProcurators: assignments.length > 0,
+            assignments,
+        };
+    }
+
+    async getActiveMailboxesByConsumer(
+        consumerId: number,
+    ): Promise<{
+        hasActiveMailboxes: boolean;
+        assignments: MailboxConsumer[];
+    }> {
+        await this.ensureConsumerExists(consumerId);
+
+        const assignments = await this.dataSource.manager.find(
+            MailboxConsumer,
+            {
+                where: {
+                    consumer: { id: consumerId },
+                    status: MailboxConsumerStatus.ACTIVE,
+                },
+                relations: { mailbox: true },
+                order: { assignedAt: 'DESC' },
+            },
+        );
+
+        return {
+            hasActiveMailboxes: assignments.length > 0,
+            assignments,
+        };
+    }
 
     async assignConsumerToMailbox(
         mailboxId: number,
@@ -170,6 +228,7 @@ export class AssignmentsService {
         return this.dataSource.transaction(async (manager) => {
             const assignment = await manager.findOne(MailboxConsumer, {
                 where: { id: mailboxConsumerId },
+                relations: { consumer: true },
                 lock: { mode: 'pessimistic_write' },
             });
             if (!assignment) {
@@ -179,11 +238,20 @@ export class AssignmentsService {
                 throw new ConflictException('La asignación de casilla no está activa');
             }
 
-            const procurator = await manager.findOneBy(Procurator, {
-                id: procuratorId,
+            const procurator = await manager.findOne(Procurator, {
+                where: {
+                    id: procuratorId,
+                    deleted_at: IsNull(),
+                },
+                relations: { consumer: true },
             });
             if (!procurator) {
                 throw new NotFoundException('Procurador no encontrado');
+            }
+            if (procurator.consumer.id !== assignment.consumer.id) {
+                throw new ConflictException(
+                    'El procurador no pertenece al consumidor de esta casilla',
+                );
             }
 
             const current = await manager.findOneBy(MailboxProcurator, {
@@ -241,6 +309,28 @@ export class AssignmentsService {
                 status: MailboxProcuratorStatus.ACTIVE,
             },
             relations: { procurator: true },
+        });
+    }
+
+    async getActiveProcuratorsByMailbox(
+        mailboxId: number,
+    ): Promise<MailboxProcurator[]> {
+        await this.ensureMailboxExists(mailboxId);
+
+        return this.dataSource.manager.find(MailboxProcurator, {
+            where: {
+                status: MailboxProcuratorStatus.ACTIVE,
+                procurator: { deleted_at: IsNull() },
+                mailboxConsumer: {
+                    mailbox: { id: mailboxId },
+                    status: MailboxConsumerStatus.ACTIVE,
+                },
+            },
+            relations: {
+                procurator: true,
+                mailboxConsumer: { mailbox: true },
+            },
+            order: { assignedAt: 'DESC' },
         });
     }
 
@@ -307,6 +397,16 @@ export class AssignmentsService {
     private async ensureMailboxExists(mailboxId: number): Promise<void> {
         if (!(await this.dataSource.manager.existsBy(Mailbox, { id: mailboxId }))) {
             throw new NotFoundException('Casilla no encontrada');
+        }
+    }
+
+    private async ensureConsumerExists(consumerId: number): Promise<void> {
+        if (
+            !(await this.dataSource.manager.existsBy(Consumer, {
+                id: consumerId,
+            }))
+        ) {
+            throw new NotFoundException('Consumidor no encontrado');
         }
     }
 }

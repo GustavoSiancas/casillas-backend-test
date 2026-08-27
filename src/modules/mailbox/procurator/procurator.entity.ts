@@ -1,6 +1,7 @@
 import { MailboxItemDeliverable } from "src/modules/mailbox/items/entites/mailbox-item-deliverable.entity";
 import { MailboxProcurator } from "src/modules/mailbox/assignments/entities/mailbox-procurator.entity";
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Consumer } from "src/modules/mailbox/consumer/entities/consumer.entity";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
 
 export enum ProcuratorDocumentType {
     DNI = "DNI",
@@ -8,9 +9,21 @@ export enum ProcuratorDocumentType {
 }
 
 @Entity('procurators')
+@Unique('UQ_procurator_consumer_document', [
+    'consumer',
+    'document_type',
+    'document_number',
+])
 export class Procurator {
     @PrimaryGeneratedColumn()
     id: number;
+
+    @ManyToOne(() => Consumer, (consumer) => consumer.procurators, {
+        nullable: false,
+        onDelete: 'RESTRICT',
+    })
+    @JoinColumn({ name: 'consumer_id' })
+    consumer: Consumer;
 
     @Column()
     names: string;

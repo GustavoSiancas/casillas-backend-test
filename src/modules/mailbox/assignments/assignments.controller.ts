@@ -17,9 +17,30 @@ import { AssignmentsService } from './assignments.service';
 export class AssignmentsController {
     constructor(private readonly service: AssignmentsService) {}
 
+    @Get('consumers/:consumerId/active-procurators')
+    getActiveProcuratorsByConsumer(
+        @Param('consumerId', ParseIntPipe) consumerId: number,
+    ) {
+        return this.service.getActiveProcuratorsByConsumer(consumerId);
+    }
+
+    @Get('consumers/:consumerId/active-mailboxes')
+    getActiveMailboxesByConsumer(
+        @Param('consumerId', ParseIntPipe) consumerId: number,
+    ) {
+        return this.service.getActiveMailboxesByConsumer(consumerId);
+    }
+
     @Get('mailboxes/:mailboxId/details')
     getDetails(@Param('mailboxId', ParseIntPipe) mailboxId: number) {
         return this.service.getMailboxDetails(mailboxId);
+    }
+
+    @Get('mailboxes/:mailboxId/procurators')
+    getActiveProcuratorsByMailbox(
+        @Param('mailboxId', ParseIntPipe) mailboxId: number,
+    ): Promise<MailboxProcurator[]> {
+        return this.service.getActiveProcuratorsByMailbox(mailboxId);
     }
 
     @Post('mailboxes/:mailboxId/consumers/assign')

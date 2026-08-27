@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Consumer } from './entities/consumer.entity';
 import { Users } from 'src/modules/extra/users/users.entity';
@@ -181,6 +181,23 @@ export class ConsumerService {
             consumers,
             new PaginationMetaResponse(page, limit, total),
         );
+    }
+
+    async getConsumerById(id: number): Promise<Consumer> {
+        const consumer = await this.consumerRepository.findOne({
+            where: { id },
+            relations: {
+                individual: true,
+                business: true,
+                lawFirm: true,
+            },
+        });
+
+        if (!consumer) {
+            throw new NotFoundException('Consumidor no encontrado');
+        }
+
+        return consumer;
     }
 
     async getConsumerWithDataUnique(
