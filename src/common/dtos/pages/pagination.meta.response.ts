@@ -11,7 +11,7 @@ export class PaginationMetaResponse {
         this.limit = limit;
         this.total = total;
         this.totalPages = Math.ceil(total / limit);
-        this.hasNextPage = page + 1 < this.totalPages;
-        this.hasPreviousPage = page > 0;
+        this.hasNextPage = page < this.totalPages;
+        this.hasPreviousPage = page > 1;
     }
 }

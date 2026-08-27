@@ -6,7 +6,6 @@ import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbo
 
 import { MailboxService } from "./mailbox.service";
 import { MailboxController } from "./mailbox.controller";
-import { PaymentsModule } from "src/modules/extra/payments/payment.module";
 
 @Module({
     imports: [
@@ -14,7 +13,6 @@ import { PaymentsModule } from "src/modules/extra/payments/payment.module";
             Mailbox,
             MailboxConsumer,
         ]),
-        PaymentsModule,
     ],
     controllers: [MailboxController],
     providers: [MailboxService],

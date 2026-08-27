@@ -6,7 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './modules/extra/users/users.module';
 import { CollaboratorModule } from './modules/extra/collaborator/collaborator.module';
 import { ConsumerModule } from './modules/mailbox/consumer/consumer.module';
-import { PaymentsModule } from './modules/extra/payments/payment.module';
 import { MailboxModule } from './modules/mailbox/mailboxes/mailbox.module';
 import { MailboxItemModule } from './modules/mailbox/items/item.module';
 import { ProcuratorModule } from './modules/mailbox/procurator/procurator.module';
@@ -31,7 +30,6 @@ import { AssignmentsModule } from './modules/mailbox/assignments/assignments.mod
     ConsumerModule,
     UsersModule,
     CollaboratorModule,
-    PaymentsModule,
     MailboxModule,
     MailboxItemModule,
     ProcuratorModule,

@@ -4,30 +4,37 @@ import {
     NotFoundException,
 } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
+import { FindOptionsWhere, Repository } from "typeorm";
 
 import { Mailbox } from "./mailbox.entity";
-import { MailboxStatus } from "./enum/mailbox-status.enum";
 import { CreateMailboxDto } from "./dto/create-mailbox.dto";
-import { PaymentsService } from "src/modules/extra/payments/payments.service";
+import { MailboxStatus } from "./enum/mailbox-status.enum";
+import { PaginatedResponse } from "src/common/dtos/pages/pagination.response";
+import { PaginationMetaResponse } from "src/common/dtos/pages/pagination.meta.response";
+import { MailboxSite } from "./enum/mailbox.enum";
 
 @Injectable()
 export class MailboxService {
     constructor(
         @InjectRepository(Mailbox)
         private readonly mailboxRepository: Repository<Mailbox>,
-
-        private readonly paymentService: PaymentsService,
     ) {}
+
+    getMailboxSites(): MailboxSite[] {
+        return Object.values(MailboxSite);
+    }
 
     async createMailbox(dto: CreateMailboxDto): Promise<Mailbox> {
         const existingMailbox = await this.mailboxRepository.findOne({
-            where: { mail_number: dto.mail_number },
+            where: {
+                mail_number: dto.mail_number,
+                mailboxSite: dto.mailboxSite,
+            },
         });
 
         if (existingMailbox) {
             throw new ConflictException(
-                "Mailbox code already exists",
+                "Mailbox code already exists at this site",
             );
         }
 
@@ -37,14 +44,14 @@ export class MailboxService {
         });
 
         try {
-            return this.mailboxRepository.save(mailbox);
+            return await this.mailboxRepository.save(mailbox);
         } catch (error: any) {
             if (
                 error.code === "23505" ||
                 error.code === "ER_DUP_ENTRY"
             ) {
                 throw new ConflictException(
-                    "Mailbox code already exists",
+                    "Mailbox code already exists at this site",
                 );
             }
 
@@ -52,11 +59,33 @@ export class MailboxService {
         }
     }
 
-    async getAllMailboxes(): Promise<Mailbox[]> {
-        return this.mailboxRepository.find();
+    async getAllMailboxes(
+        page: number,
+        limit: number,
+        status?: MailboxStatus,
+        mail_number?: string,
+        mailboxSite?: MailboxSite,
+    ): Promise<PaginatedResponse<Mailbox>> {
+        const where: FindOptionsWhere<Mailbox> = {};
+
+        if (status !== undefined) where.status = status;
+        if (mail_number !== undefined) where.mail_number = mail_number;
+        if (mailboxSite !== undefined) where.mailboxSite = mailboxSite;
+
+        const [data, total] = await this.mailboxRepository.findAndCount({
+            where,
+            skip: (page - 1) * limit,
+            take: limit,
+            order: { id: 'ASC' },
+        });
+
+        return new PaginatedResponse(
+            data,
+            new PaginationMetaResponse(page, limit, total),
+        );
     }
 
-    async getMailboxById(id: number): Promise<Mailbox> {
+    async putMailboxStatus(id: number, status: MailboxStatus): Promise<Mailbox> {
         const mailbox = await this.mailboxRepository.findOne({
             where: { id },
         });
@@ -67,7 +96,8 @@ export class MailboxService {
             );
         }
 
-        return mailbox;
+        mailbox.status = status;
+        return this.mailboxRepository.save(mailbox);
     }
 
     async deleteMailbox(id: number): Promise<void> {
@@ -84,33 +114,4 @@ export class MailboxService {
         await this.mailboxRepository.softDelete(id);
     }
 
-    // Ejecutar cada 24 horas
-    async validateMailboxPayments(): Promise<void> {
-        const mailboxes = await this.mailboxRepository.find();
-
-        const mailboxesToUpdate: Mailbox[] = [];
-
-        for (const mailbox of mailboxes) {
-            const monthsOnDebt =
-                await this.paymentService.getMonthsOnDebt(mailbox.id);
-
-            if (
-                monthsOnDebt > 3 &&
-                mailbox.status === MailboxStatus.ACTIVE
-            ) {
-                mailbox.status = MailboxStatus.INACTIVE;
-                mailboxesToUpdate.push(mailbox);
-            } else if (
-                monthsOnDebt <= 3 &&
-                mailbox.status === MailboxStatus.INACTIVE
-            ) {
-                mailbox.status = MailboxStatus.ACTIVE;
-                mailboxesToUpdate.push(mailbox);
-            }
-        }
-
-        if (mailboxesToUpdate.length > 0) {
-            await this.mailboxRepository.save(mailboxesToUpdate);
-        }
-    }
 }
