@@ -24,6 +24,26 @@ export class MailboxService {
         return Object.values(MailboxSite);
     }
 
+    async getMailboxBySiteAndNumber(
+        mailboxSite: MailboxSite,
+        mailNumber: number,
+    ): Promise<Mailbox> {
+        const mailbox = await this.mailboxRepository.findOne({
+            where: {
+                mailboxSite,
+                mail_number: mailNumber,
+            },
+        });
+
+        if (!mailbox) {
+            throw new NotFoundException(
+                'Mailbox not found for the specified site and number',
+            );
+        }
+
+        return mailbox;
+    }
+
     async createMailbox(dto: CreateMailboxDto): Promise<Mailbox> {
         const existingMailbox = await this.mailboxRepository.findOne({
             where: {

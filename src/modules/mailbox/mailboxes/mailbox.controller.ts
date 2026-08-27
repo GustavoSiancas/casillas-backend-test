@@ -41,6 +41,21 @@ export class MailboxController {
         return this.mailboxService.getMailboxSites();
     }
 
+    @Get('by-site-and-number')
+    @ApiQuery({ name: 'mailboxSite', required: true, enum: MailboxSite })
+    @ApiQuery({ name: 'mail_number', required: true, type: Number })
+    async getMailboxBySiteAndNumber(
+        @Query('mailboxSite', new ParseEnumPipe(MailboxSite))
+        mailboxSite: MailboxSite,
+        @Query('mail_number', ParseIntPipe) mailNumber: number,
+    ): Promise<MailboxResponseDto> {
+        const mailbox = await this.mailboxService.getMailboxBySiteAndNumber(
+            mailboxSite,
+            mailNumber,
+        );
+        return MailboxResponseDto.fromEntity(mailbox);
+    }
+
     @Post()
     @HttpCode(HttpStatus.CREATED)
     async createMailbox(

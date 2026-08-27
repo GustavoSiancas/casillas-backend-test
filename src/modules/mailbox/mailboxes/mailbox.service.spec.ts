@@ -25,6 +25,28 @@ describe('MailboxService', () => {
         expect(service.getMailboxSites()).toEqual(Object.values(MailboxSite));
     });
 
+    it('returns one mailbox by site and mail number', async () => {
+        const mailbox = {
+            id: 1,
+            mailboxSite: MailboxSite.MIRAFLORES,
+            mail_number: 101,
+        } as Mailbox;
+        repository.findOne.mockResolvedValue(mailbox);
+
+        await expect(
+            service.getMailboxBySiteAndNumber(
+                MailboxSite.MIRAFLORES,
+                101,
+            ),
+        ).resolves.toBe(mailbox);
+        expect(repository.findOne).toHaveBeenCalledWith({
+            where: {
+                mailboxSite: MailboxSite.MIRAFLORES,
+                mail_number: 101,
+            },
+        });
+    });
+
     it('validates duplicates by mail number and site', async () => {
         repository.findOne.mockResolvedValue({ id: 1 } as Mailbox);
 
