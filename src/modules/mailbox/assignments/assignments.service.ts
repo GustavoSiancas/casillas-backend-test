@@ -354,6 +354,25 @@ export class AssignmentsService {
             ? await manager.findOneByOrFail(Mailbox, { id: mailboxId })
             : await this.getLockedMailbox(manager, mailboxId);
 
+        const consumer = await manager.findOneBy(Consumer, { id: consumerId });
+        if (!consumer) {
+            throw new NotFoundException('Consumidor no encontrado');
+        }
+
+        const existingConsumerAssignment = await manager.findOneBy(
+            MailboxConsumer,
+            {
+                mailbox: { id: mailboxId },
+                consumer: { id: consumerId },
+                status: MailboxConsumerStatus.ACTIVE,
+            },
+        );
+        if (existingConsumerAssignment) {
+            throw new ConflictException(
+                'El consumidor ya tiene esta casilla asignada',
+            );
+        }
+
         const activeAssignment = await manager.findOneBy(MailboxConsumer, {
             mailbox: { id: mailboxId },
             status: MailboxConsumerStatus.ACTIVE,
@@ -362,11 +381,6 @@ export class AssignmentsService {
             throw new ConflictException(
                 'La casilla ya tiene un consumidor activo',
             );
-        }
-
-        const consumer = await manager.findOneBy(Consumer, { id: consumerId });
-        if (!consumer) {
-            throw new NotFoundException('Consumidor no encontrado');
         }
 
         return manager.save(

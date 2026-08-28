@@ -12,6 +12,7 @@ import { MailboxStatus } from "./enum/mailbox-status.enum";
 import { PaginatedResponse } from "src/common/dtos/pages/pagination.response";
 import { PaginationMetaResponse } from "src/common/dtos/pages/pagination.meta.response";
 import { MailboxSite } from "./enum/mailbox.enum";
+import { MailboxConsumerStatus } from "src/modules/mailbox/assignments/enum/mailbox-consumer-status.enum";
 
 @Injectable()
 export class MailboxService {
@@ -28,12 +29,18 @@ export class MailboxService {
         mailboxSite: MailboxSite,
         mailNumber: number,
     ): Promise<Mailbox> {
-        const mailbox = await this.mailboxRepository.findOne({
-            where: {
-                mailboxSite,
-                mail_number: mailNumber,
-            },
-        });
+        const mailbox = await this.mailboxRepository
+            .createQueryBuilder('mailbox')
+            .leftJoin(
+                'mailbox.mailboxConsumers',
+                'activeAssignment',
+                'activeAssignment.status = :activeStatus',
+                { activeStatus: MailboxConsumerStatus.ACTIVE },
+            )
+            .where('mailbox.mailboxSite = :mailboxSite', { mailboxSite })
+            .andWhere('mailbox.mail_number = :mailNumber', { mailNumber })
+            .andWhere('activeAssignment.id IS NULL')
+            .getOne();
 
         if (!mailbox) {
             throw new NotFoundException(

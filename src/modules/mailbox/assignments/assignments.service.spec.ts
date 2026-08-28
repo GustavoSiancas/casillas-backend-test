@@ -1,4 +1,3 @@
-import { ConflictException } from '@nestjs/common';
 import { Consumer } from 'src/modules/mailbox/consumer/entities/consumer.entity';
 import { Mailbox } from 'src/modules/mailbox/mailboxes/mailbox.entity';
 import { DataSource } from 'typeorm';
@@ -129,18 +128,47 @@ describe('AssignmentsService', () => {
         );
     });
 
-    it('impide crear dos asignaciones activas para una casilla', async () => {
+    it('impide repetir la misma relación activa entre casilla y consumidor', async () => {
+        const mailbox = { id: 1 } as Mailbox;
+        const consumer = { id: 2 } as Consumer;
         const manager = {
-            findOne: jest.fn().mockResolvedValue({ id: 1 } as Mailbox),
-            findOneBy: jest.fn().mockResolvedValue({ id: 10 }),
+            findOne: jest.fn().mockResolvedValue(mailbox),
+            findOneBy: jest
+                .fn()
+                .mockResolvedValueOnce(consumer)
+                .mockResolvedValueOnce({ id: 10 }),
         };
         const dataSource = {
             transaction: jest.fn((callback) => callback(manager)),
         } as unknown as DataSource;
         const service = new AssignmentsService(dataSource);
 
-        await expect(service.assignConsumerToMailbox(1, 2)).rejects.toBeInstanceOf(
-            ConflictException,
+        await expect(service.assignConsumerToMailbox(1, 2)).rejects.toThrow(
+            'El consumidor ya tiene esta casilla asignada',
+        );
+        expect(manager.findOneBy).toHaveBeenCalledWith(MailboxConsumer, {
+            mailbox: { id: 1 },
+            consumer: { id: 2 },
+            status: MailboxConsumerStatus.ACTIVE,
+        });
+    });
+
+    it('impide asignar una casilla ocupada por otro consumidor', async () => {
+        const manager = {
+            findOne: jest.fn().mockResolvedValue({ id: 1 } as Mailbox),
+            findOneBy: jest
+                .fn()
+                .mockResolvedValueOnce({ id: 2 } as Consumer)
+                .mockResolvedValueOnce(null)
+                .mockResolvedValueOnce({ id: 10 }),
+        };
+        const dataSource = {
+            transaction: jest.fn((callback) => callback(manager)),
+        } as unknown as DataSource;
+        const service = new AssignmentsService(dataSource);
+
+        await expect(service.assignConsumerToMailbox(1, 2)).rejects.toThrow(
+            'La casilla ya tiene un consumidor activo',
         );
     });
 
@@ -157,8 +185,9 @@ describe('AssignmentsService', () => {
             findOne: jest.fn().mockResolvedValue(mailbox),
             findOneBy: jest
                 .fn()
+                .mockResolvedValueOnce(consumer)
                 .mockResolvedValueOnce(null)
-                .mockResolvedValueOnce(consumer),
+                .mockResolvedValueOnce(null),
             create: jest.fn().mockReturnValue(created),
             save: jest.fn().mockResolvedValue(created),
         };
