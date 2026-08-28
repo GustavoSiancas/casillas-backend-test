@@ -42,18 +42,33 @@ export class MailboxController {
     }
 
     @Get('by-site-and-number')
-    @ApiQuery({ name: 'mailboxSite', required: true, enum: MailboxSite })
-    @ApiQuery({ name: 'mail_number', required: true, type: Number })
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'mailboxSite', required: false, enum: MailboxSite })
+    @ApiQuery({ name: 'mail_number', required: false, type: Number })
     async getMailboxBySiteAndNumber(
-        @Query('mailboxSite', new ParseEnumPipe(MailboxSite))
-        mailboxSite: MailboxSite,
-        @Query('mail_number', ParseIntPipe) mailNumber: number,
-    ): Promise<MailboxResponseDto> {
-        const mailbox = await this.mailboxService.getMailboxBySiteAndNumber(
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+        @Query(
+            'mailboxSite',
+            new ParseEnumPipe(MailboxSite, { optional: true }),
+        )
+        mailboxSite?: MailboxSite,
+        @Query('mail_number', new ParseIntPipe({ optional: true }))
+        mailNumber?: number,
+    ): Promise<PaginatedResponse<MailboxResponseDto>> {
+        const normalizedPage = Math.max(page, 1);
+        const normalizedLimit = Math.min(Math.max(limit, 1), 100);
+        const result = await this.mailboxService.getAvailableMailboxes(
+            normalizedPage,
+            normalizedLimit,
             mailboxSite,
             mailNumber,
         );
-        return MailboxResponseDto.fromEntity(mailbox);
+        return new PaginatedResponse(
+            result.data.map(MailboxResponseDto.fromEntity),
+            result.pagination,
+        );
     }
 
     @Post()

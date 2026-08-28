@@ -4,6 +4,7 @@ import {
     MailboxItemAccessStatus,
     MailboxItemStatus,
 } from '../entites/mailbox-item.entity';
+import { MailboxSite } from '../../mailboxes/enum/mailbox.enum';
 
 export class MailboxItemResponseDto {
     @ApiProperty()
@@ -17,6 +18,12 @@ export class MailboxItemResponseDto {
 
     @ApiProperty()
     mailboxId: number;
+
+    @ApiProperty({ enum: MailboxSite })
+    sede: MailboxSite;
+
+    @ApiProperty()
+    mail_number: number;
 
     @ApiProperty()
     title: string;
@@ -48,6 +55,8 @@ export class MailboxItemResponseDto {
             mailboxConsumerId: item.mailboxConsumer?.id ?? null,
             consumerId: item.mailboxConsumer?.consumer?.id ?? null,
             mailboxId: item.mailbox.id,
+            sede: item.mailbox.mailboxSite,
+            mail_number: item.mailbox.mail_number,
             title: item.title,
             description: item.description,
             status: item.status,

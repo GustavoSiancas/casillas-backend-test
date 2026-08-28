@@ -25,11 +25,13 @@ export class MailboxService {
         return Object.values(MailboxSite);
     }
 
-    async getMailboxBySiteAndNumber(
-        mailboxSite: MailboxSite,
-        mailNumber: number,
-    ): Promise<Mailbox> {
-        const mailbox = await this.mailboxRepository
+    async getAvailableMailboxes(
+        page: number,
+        limit: number,
+        mailboxSite?: MailboxSite,
+        mailNumber?: number,
+    ): Promise<PaginatedResponse<Mailbox>> {
+        const query = this.mailboxRepository
             .createQueryBuilder('mailbox')
             .leftJoin(
                 'mailbox.mailboxConsumers',
@@ -37,18 +39,29 @@ export class MailboxService {
                 'activeAssignment.status = :activeStatus',
                 { activeStatus: MailboxConsumerStatus.ACTIVE },
             )
-            .where('mailbox.mailboxSite = :mailboxSite', { mailboxSite })
-            .andWhere('mailbox.mail_number = :mailNumber', { mailNumber })
-            .andWhere('activeAssignment.id IS NULL')
-            .getOne();
+            .where('activeAssignment.id IS NULL');
 
-        if (!mailbox) {
-            throw new NotFoundException(
-                'Mailbox not found for the specified site and number',
-            );
+        if (mailboxSite !== undefined) {
+            query.andWhere('mailbox.mailboxSite = :mailboxSite', {
+                mailboxSite,
+            });
+        }
+        if (mailNumber !== undefined) {
+            query.andWhere('mailbox.mail_number = :mailNumber', {
+                mailNumber,
+            });
         }
 
-        return mailbox;
+        const [data, total] = await query
+            .orderBy('mailbox.updatedAt', 'DESC')
+            .skip((page - 1) * limit)
+            .take(limit)
+            .getManyAndCount();
+
+        return new PaginatedResponse(
+            data,
+            new PaginationMetaResponse(page, limit, total),
+        );
     }
 
     async createMailbox(dto: CreateMailboxDto): Promise<Mailbox> {

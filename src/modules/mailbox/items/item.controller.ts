@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    DefaultValuePipe,
     Delete,
     Get,
     HttpCode,
@@ -10,18 +11,99 @@ import {
     ParseIntPipe,
     Patch,
     Post,
+    Query,
 } from "@nestjs/common";
 
 import { MailboxItemService } from "./item.service";
 import { CreateMailboxItemDto } from "./dto/create-mailbox-item.dto";
-import { MailboxItemStatus } from "./entites/mailbox-item.entity";
+import {
+    MailboxItemAccessStatus,
+    MailboxItemStatus,
+} from "./entites/mailbox-item.entity";
 import { MailboxItemResponseDto } from './dto/mailbox-item.response.dto';
+import { PaginatedResponse } from 'src/common/dtos/pages/pagination.response';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller("mailbox-items")
 export class MailboxItemController {
     constructor(
         private readonly mailboxItemService: MailboxItemService,
     ) {}
+
+    @Get('collaborator/consumer/:consumerId/active-mailbox-items')
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'mailboxConsumerId', required: false, type: Number })
+    @ApiQuery({ name: 'status', required: false, enum: MailboxItemStatus })
+    @ApiQuery({ name: 'fromDate', required: false, type: String })
+    @ApiQuery({ name: 'toDate', required: false, type: String })
+    async getActiveMailboxItemsForCollaborator(
+        @Param('consumerId', ParseIntPipe) consumerId: number,
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+        @Query('mailboxConsumerId', new ParseIntPipe({ optional: true }))
+        mailboxConsumerId?: number,
+        @Query('status', new ParseEnumPipe(MailboxItemStatus, { optional: true }))
+        status?: MailboxItemStatus,
+        @Query('fromDate') fromDate?: string,
+        @Query('toDate') toDate?: string,
+    ): Promise<PaginatedResponse<MailboxItemResponseDto>> {
+        const result =
+            await this.mailboxItemService.getActiveMailboxItemsForConsumer(
+                consumerId,
+                Math.max(page, 1),
+                Math.min(Math.max(limit, 1), 100),
+                [
+                    MailboxItemAccessStatus.VISIBLE,
+                    MailboxItemAccessStatus.BLOCKED_UNPAID,
+                ],
+                mailboxConsumerId,
+                status,
+                fromDate,
+                toDate,
+            );
+
+        return new PaginatedResponse(
+            result.data.map(MailboxItemResponseDto.fromEntity),
+            result.pagination,
+        );
+    }
+
+    @Get('consumer/:consumerId/active-mailbox-items')
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'mailboxConsumerId', required: false, type: Number })
+    @ApiQuery({ name: 'status', required: false, enum: MailboxItemStatus })
+    @ApiQuery({ name: 'fromDate', required: false, type: String })
+    @ApiQuery({ name: 'toDate', required: false, type: String })
+    async getActiveMailboxItemsForUser(
+        @Param('consumerId', ParseIntPipe) consumerId: number,
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+        @Query('mailboxConsumerId', new ParseIntPipe({ optional: true }))
+        mailboxConsumerId?: number,
+        @Query('status', new ParseEnumPipe(MailboxItemStatus, { optional: true }))
+        status?: MailboxItemStatus,
+        @Query('fromDate') fromDate?: string,
+        @Query('toDate') toDate?: string,
+    ): Promise<PaginatedResponse<MailboxItemResponseDto>> {
+        const result =
+            await this.mailboxItemService.getActiveMailboxItemsForConsumer(
+                consumerId,
+                Math.max(page, 1),
+                Math.min(Math.max(limit, 1), 100),
+                [MailboxItemAccessStatus.VISIBLE],
+                mailboxConsumerId,
+                status,
+                fromDate,
+                toDate,
+            );
+
+        return new PaginatedResponse(
+            result.data.map(MailboxItemResponseDto.fromEntity),
+            result.pagination,
+        );
+    }
 
     @Post("mailbox/:mailboxId")
     @HttpCode(HttpStatus.CREATED)

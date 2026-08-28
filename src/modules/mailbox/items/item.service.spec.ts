@@ -85,4 +85,144 @@ describe('MailboxItemService', () => {
             }),
         );
     });
+
+    it('paginates items from all active assignments of a consumer', async () => {
+        const item = {
+            id: 20,
+            mailbox: { id: 4 },
+            mailboxConsumer: { id: 8, consumer: { id: 2 } },
+        } as MailboxItem;
+        const queryBuilder = {
+            innerJoinAndSelect: jest.fn(),
+            innerJoin: jest.fn(),
+            leftJoinAndSelect: jest.fn(),
+            where: jest.fn(),
+            andWhere: jest.fn(),
+            orderBy: jest.fn(),
+            skip: jest.fn(),
+            take: jest.fn(),
+            getManyAndCount: jest.fn().mockResolvedValue([[item], 11]),
+        };
+        for (const method of [
+            'innerJoinAndSelect',
+            'innerJoin',
+            'leftJoinAndSelect',
+            'where',
+            'andWhere',
+            'orderBy',
+            'skip',
+            'take',
+        ] as const) {
+            queryBuilder[method].mockReturnValue(queryBuilder);
+        }
+        const repository = {
+            createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
+        } as unknown as Repository<MailboxItem>;
+        const service = new MailboxItemService(
+            repository,
+            {} as DataSource,
+        );
+
+        await expect(
+            service.getActiveMailboxItemsForConsumer(2, 2, 5, [
+                MailboxItemAccessStatus.VISIBLE,
+                MailboxItemAccessStatus.BLOCKED_UNPAID,
+            ]),
+        ).resolves.toEqual({
+            data: [item],
+            pagination: {
+                page: 2,
+                limit: 5,
+                total: 11,
+                totalPages: 3,
+                hasNextPage: true,
+                hasPreviousPage: true,
+            },
+        });
+        expect(queryBuilder.where).toHaveBeenCalledWith(
+            'consumer.id = :consumerId',
+            { consumerId: 2 },
+        );
+        expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+            'activeMailboxConsumer.status = :assignmentStatus',
+            { assignmentStatus: MailboxConsumerStatus.ACTIVE },
+        );
+        expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+            'item.accessStatus IN (:...accessStatuses)',
+            {
+                accessStatuses: [
+                    MailboxItemAccessStatus.VISIBLE,
+                    MailboxItemAccessStatus.BLOCKED_UNPAID,
+                ],
+            },
+        );
+        expect(queryBuilder.innerJoin).toHaveBeenCalledWith(
+            'mailbox.mailboxConsumers',
+            'activeMailboxConsumer',
+            'activeMailboxConsumer.status = :assignmentStatus',
+            { assignmentStatus: MailboxConsumerStatus.ACTIVE },
+        );
+        expect(queryBuilder.skip).toHaveBeenCalledWith(5);
+        expect(queryBuilder.take).toHaveBeenCalledWith(5);
+    });
+
+    it('filters consumer items by assignment, status and received dates', async () => {
+        const queryBuilder = {
+            innerJoinAndSelect: jest.fn(),
+            innerJoin: jest.fn(),
+            leftJoinAndSelect: jest.fn(),
+            where: jest.fn(),
+            andWhere: jest.fn(),
+            orderBy: jest.fn(),
+            skip: jest.fn(),
+            take: jest.fn(),
+            getManyAndCount: jest.fn().mockResolvedValue([[], 0]),
+        };
+        for (const method of [
+            'innerJoinAndSelect',
+            'innerJoin',
+            'leftJoinAndSelect',
+            'where',
+            'andWhere',
+            'orderBy',
+            'skip',
+            'take',
+        ] as const) {
+            queryBuilder[method].mockReturnValue(queryBuilder);
+        }
+        const service = new MailboxItemService(
+            {
+                createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
+            } as unknown as Repository<MailboxItem>,
+            {} as DataSource,
+        );
+
+        await service.getActiveMailboxItemsForConsumer(
+            2,
+            1,
+            10,
+            [MailboxItemAccessStatus.VISIBLE],
+            8,
+            MailboxItemStatus.RECEIVED,
+            '2026-08-01',
+            '2026-08-28',
+        );
+
+        expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+            'activeMailboxConsumer.id = :mailboxConsumerId',
+            { mailboxConsumerId: 8 },
+        );
+        expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+            'item.status = :status',
+            { status: MailboxItemStatus.RECEIVED },
+        );
+        expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+            'item.receivedAt >= :fromDate',
+            { fromDate: new Date('2026-08-01') },
+        );
+        expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+            'item.receivedAt <= :toDate',
+            { toDate: new Date('2026-08-28T23:59:59.999Z') },
+        );
+    });
 });

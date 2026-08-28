@@ -13,7 +13,10 @@ describe('MailboxService', () => {
         leftJoin: jest.Mock;
         where: jest.Mock;
         andWhere: jest.Mock;
-        getOne: jest.Mock;
+        orderBy: jest.Mock;
+        skip: jest.Mock;
+        take: jest.Mock;
+        getManyAndCount: jest.Mock;
     };
 
     beforeEach(() => {
@@ -21,11 +24,17 @@ describe('MailboxService', () => {
             leftJoin: jest.fn(),
             where: jest.fn(),
             andWhere: jest.fn(),
-            getOne: jest.fn(),
+            orderBy: jest.fn(),
+            skip: jest.fn(),
+            take: jest.fn(),
+            getManyAndCount: jest.fn(),
         };
         queryBuilder.leftJoin.mockReturnValue(queryBuilder);
         queryBuilder.where.mockReturnValue(queryBuilder);
         queryBuilder.andWhere.mockReturnValue(queryBuilder);
+        queryBuilder.orderBy.mockReturnValue(queryBuilder);
+        queryBuilder.skip.mockReturnValue(queryBuilder);
+        queryBuilder.take.mockReturnValue(queryBuilder);
 
         repository = {
             findOne: jest.fn(),
@@ -43,20 +52,32 @@ describe('MailboxService', () => {
         expect(service.getMailboxSites()).toEqual(Object.values(MailboxSite));
     });
 
-    it('returns one mailbox by site and mail number', async () => {
+    it('returns paginated available mailboxes by site and mail number', async () => {
         const mailbox = {
             id: 1,
             mailboxSite: MailboxSite.MIRAFLORES,
             mail_number: 101,
         } as Mailbox;
-        queryBuilder.getOne.mockResolvedValue(mailbox);
+        queryBuilder.getManyAndCount.mockResolvedValue([[mailbox], 1]);
 
         await expect(
-            service.getMailboxBySiteAndNumber(
+            service.getAvailableMailboxes(
+                1,
+                10,
                 MailboxSite.MIRAFLORES,
                 101,
             ),
-        ).resolves.toBe(mailbox);
+        ).resolves.toEqual({
+            data: [mailbox],
+            pagination: {
+                page: 1,
+                limit: 10,
+                total: 1,
+                totalPages: 1,
+                hasNextPage: false,
+                hasPreviousPage: false,
+            },
+        });
         expect(repository.createQueryBuilder).toHaveBeenCalledWith('mailbox');
         expect(queryBuilder.leftJoin).toHaveBeenCalledWith(
             'mailbox.mailboxConsumers',
@@ -64,22 +85,19 @@ describe('MailboxService', () => {
             'activeAssignment.status = :activeStatus',
             { activeStatus: MailboxConsumerStatus.ACTIVE },
         );
-        expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+        expect(queryBuilder.where).toHaveBeenCalledWith(
             'activeAssignment.id IS NULL',
         );
-    });
-
-    it('does not return a mailbox that has an active assignment', async () => {
-        queryBuilder.getOne.mockResolvedValue(null);
-
-        await expect(
-            service.getMailboxBySiteAndNumber(
-                MailboxSite.MIRAFLORES,
-                101,
-            ),
-        ).rejects.toThrow(
-            'Mailbox not found for the specified site and number',
+        expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+            'mailbox.mailboxSite = :mailboxSite',
+            { mailboxSite: MailboxSite.MIRAFLORES },
         );
+        expect(queryBuilder.andWhere).toHaveBeenCalledWith(
+            'mailbox.mail_number = :mailNumber',
+            { mailNumber: 101 },
+        );
+        expect(queryBuilder.skip).toHaveBeenCalledWith(0);
+        expect(queryBuilder.take).toHaveBeenCalledWith(10);
     });
 
     it('validates duplicates by mail number and site', async () => {

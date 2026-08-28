@@ -1,4 +1,9 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+    BadRequestException,
+    ConflictException,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common';
 import {
     MailboxItem,
     MailboxItemAccessStatus,
@@ -11,6 +16,8 @@ import { CreateMailboxItemDto } from './dto/create-mailbox-item.dto';
 import { MailboxConsumer } from 'src/modules/mailbox/assignments/entities/mailbox-consumer.entity';
 import { MailboxConsumerStatus } from 'src/modules/mailbox/assignments/enum/mailbox-consumer-status.enum';
 import { MailboxConsumerStatusReason } from 'src/modules/mailbox/assignments/enum/mailbox-consumer-status-reason.enum';
+import { PaginatedResponse } from 'src/common/dtos/pages/pagination.response';
+import { PaginationMetaResponse } from 'src/common/dtos/pages/pagination.meta.response';
 
 @Injectable()
 export class MailboxItemService {
@@ -20,6 +27,71 @@ export class MailboxItemService {
 
         private readonly dataSource: DataSource,
     ) {}
+
+    async getActiveMailboxItemsForConsumer(
+        consumerId: number,
+        page: number,
+        limit: number,
+        accessStatuses: MailboxItemAccessStatus[],
+        mailboxConsumerId?: number,
+        status?: MailboxItemStatus,
+        fromDate?: string,
+        toDate?: string,
+    ): Promise<PaginatedResponse<MailboxItem>> {
+        const from = this.parseFilterDate(fromDate, 'fromDate', false);
+        const to = this.parseFilterDate(toDate, 'toDate', true);
+        if (from && to && from > to) {
+            throw new BadRequestException(
+                'fromDate no puede ser posterior a toDate',
+            );
+        }
+
+        const query = this.mailboxItemRepository
+            .createQueryBuilder('item')
+            .innerJoinAndSelect('item.mailbox', 'mailbox')
+            .innerJoin(
+                'mailbox.mailboxConsumers',
+                'activeMailboxConsumer',
+                'activeMailboxConsumer.status = :assignmentStatus',
+                { assignmentStatus: MailboxConsumerStatus.ACTIVE },
+            )
+            .innerJoin('activeMailboxConsumer.consumer', 'consumer')
+            .leftJoinAndSelect('item.mailboxConsumer', 'itemMailboxConsumer')
+            .leftJoinAndSelect('itemMailboxConsumer.consumer', 'itemConsumer')
+            .where('consumer.id = :consumerId', { consumerId })
+            .andWhere('activeMailboxConsumer.status = :assignmentStatus', {
+                assignmentStatus: MailboxConsumerStatus.ACTIVE,
+            })
+            .andWhere('item.accessStatus IN (:...accessStatuses)', {
+                accessStatuses,
+            });
+
+        if (mailboxConsumerId !== undefined) {
+            query.andWhere('activeMailboxConsumer.id = :mailboxConsumerId', {
+                mailboxConsumerId,
+            });
+        }
+        if (status !== undefined) {
+            query.andWhere('item.status = :status', { status });
+        }
+        if (from) {
+            query.andWhere('item.receivedAt >= :fromDate', { fromDate: from });
+        }
+        if (to) {
+            query.andWhere('item.receivedAt <= :toDate', { toDate: to });
+        }
+
+        const [data, total] = await query
+            .orderBy('item.receivedAt', 'DESC')
+            .skip((page - 1) * limit)
+            .take(limit)
+            .getManyAndCount();
+
+        return new PaginatedResponse(
+            data,
+            new PaginationMetaResponse(page, limit, total),
+        );
+    }
 
     async createMailboxItem(
         mailboxId: number,
@@ -187,5 +259,22 @@ export class MailboxItemService {
         }
 
         await this.mailboxItemRepository.softRemove(mailboxItem);
+    }
+
+    private parseFilterDate(
+        value: string | undefined,
+        field: string,
+        endOfDay: boolean,
+    ): Date | undefined {
+        if (!value) return undefined;
+
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            throw new BadRequestException(`${field} debe ser una fecha válida`);
+        }
+        if (endOfDay && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+            date.setUTCHours(23, 59, 59, 999);
+        }
+        return date;
     }
 }
