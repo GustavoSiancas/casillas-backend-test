@@ -2,12 +2,19 @@ import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbo
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { MailboxItemDeliverable } from "./mailbox-item-deliverable.entity";
 import { Mailbox } from "src/modules/mailbox/mailboxes/mailbox.entity";
+import { AdministrativeMailboxItemData } from "./administrative-mailbox-item-data.entity";
+import { JudicialMailboxItemData } from "./judicial-mailbox-item-data.entity";
 
 export enum MailboxItemStatus {
-    RECEIVED = "RECEIVED", // RECIBIDO POR EL AREA DE CASILLAS
-    ON_VIEW = "ON_VIEW", // EN VISTA POR EL CONSUMIDOR
-    REQUESTED = "REQUESTED", // SOLICITADO POR EL CONSUMIDOR
-    DELIVERED = "DELIVERED", // ENTREGADO
+    DRAFT = "DRAFT",
+    PENDING = "PENDING",
+    REQUESTED = "REQUESTED",
+    DELIVERED = "DELIVERED",
+}
+
+export enum MailboxItemType {
+    ADMINISTRATIVE = "ADMINISTRATIVE",
+    JUDICIAL = "JUDICIAL",
 }
 
 export enum MailboxItemAccessStatus {
@@ -22,7 +29,16 @@ export class MailboxItem {
     id: number;
 
     @Column()
-    title: string;
+    name: string;
+
+    @Column({ name: 'case_number' })
+    caseNumber: string;
+
+    @Column({ name: 'document_date', type: 'datetime' })
+    documentDate: Date;
+
+    @Column({ name: 'mailbox_item_type', type: 'enum', enum: MailboxItemType })
+    type: MailboxItemType;
 
     @ManyToOne(
         () => MailboxConsumer,
@@ -47,12 +63,18 @@ export class MailboxItem {
     @OneToOne(() => MailboxItemDeliverable, mailboxItemDeliverable => mailboxItemDeliverable.mailboxItem)
     mailboxItemDeliverable: MailboxItemDeliverable;
 
+    @OneToOne(() => AdministrativeMailboxItemData, data => data.mailboxItem)
+    administrativeData: AdministrativeMailboxItemData | null;
+
+    @OneToOne(() => JudicialMailboxItemData, data => data.mailboxItem)
+    judicialData: JudicialMailboxItemData | null;
+
     @Column()
     description: string;
 
     @Column(
         { 
-        type: "enum", enum: MailboxItemStatus, default: MailboxItemStatus.RECEIVED
+        type: "enum", enum: MailboxItemStatus, default: MailboxItemStatus.DRAFT
         }
     )
     status: MailboxItemStatus;

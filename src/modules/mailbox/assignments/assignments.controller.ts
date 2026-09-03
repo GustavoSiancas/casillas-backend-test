@@ -17,6 +17,11 @@ import { AssignmentsService } from './assignments.service';
 export class AssignmentsController {
     constructor(private readonly service: AssignmentsService) {}
 
+    @Get('mailbox-consumers/active')
+    getAllActiveMailboxConsumers() {
+        return this.service.getAllActiveMailboxConsumers();
+    }
+
     @Get('consumers/:consumerId/active-procurators')
     getActiveProcuratorsByConsumer(
         @Param('consumerId', ParseIntPipe) consumerId: number,

@@ -7,11 +7,18 @@ import {
     MailboxItem,
     MailboxItemAccessStatus,
     MailboxItemStatus,
+    MailboxItemType,
 } from './entites/mailbox-item.entity';
 import { MailboxItemService } from './item.service';
 
 describe('MailboxItemService', () => {
-    const dto = { title: 'Carta', description: 'Documento recibido' };
+    const dto = {
+        name: 'Carta',
+        caseNumber: 'EXP-2026-001',
+        documentDate: '2026-08-01T10:00:00.000Z',
+        type: MailboxItemType.JUDICIAL,
+        description: 'Documento recibido',
+    };
 
     function createService(assignment: MailboxConsumer | null) {
         const mailbox = { id: 4 } as Mailbox;
@@ -33,7 +40,7 @@ describe('MailboxItemService', () => {
         return { service, manager, mailbox };
     }
 
-    it('creates a visible received item for an active paid assignment', async () => {
+    it('creates a visible draft item for an active paid assignment', async () => {
         const assignment = {
             id: 8,
             status: MailboxConsumerStatus.ACTIVE,
@@ -48,13 +55,13 @@ describe('MailboxItemService', () => {
             expect.objectContaining({
                 mailbox,
                 mailboxConsumer: assignment,
-                status: MailboxItemStatus.RECEIVED,
+                status: MailboxItemStatus.DRAFT,
                 accessStatus: MailboxItemAccessStatus.VISIBLE,
             }),
         );
     });
 
-    it('blocks an item received for an unpaid assignment', async () => {
+    it('blocks a draft item for an unpaid assignment', async () => {
         const assignment = {
             id: 8,
             status: MailboxConsumerStatus.ACTIVE,
@@ -203,7 +210,7 @@ describe('MailboxItemService', () => {
             10,
             [MailboxItemAccessStatus.VISIBLE],
             8,
-            MailboxItemStatus.RECEIVED,
+            MailboxItemStatus.DRAFT,
             '2026-08-01',
             '2026-08-28',
         );
@@ -214,7 +221,7 @@ describe('MailboxItemService', () => {
         );
         expect(queryBuilder.andWhere).toHaveBeenCalledWith(
             'item.status = :status',
-            { status: MailboxItemStatus.RECEIVED },
+            { status: MailboxItemStatus.DRAFT },
         );
         expect(queryBuilder.andWhere).toHaveBeenCalledWith(
             'item.receivedAt >= :fromDate',

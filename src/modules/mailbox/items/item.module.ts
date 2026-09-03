@@ -7,6 +7,8 @@ import { MailboxItemController } from "./item.controller";
 import { Procurator } from "src/modules/mailbox/procurator/procurator.entity";
 import { MailboxItemDeliverable } from "./entites/mailbox-item-deliverable.entity";
 import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbox-consumer.entity";
+import { AdministrativeMailboxItemData } from "./entites/administrative-mailbox-item-data.entity";
+import { JudicialMailboxItemData } from "./entites/judicial-mailbox-item-data.entity";
 
 @Module({
     imports: [
@@ -16,6 +18,8 @@ import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbo
             MailboxItemDeliverable,
             Procurator, // Add the Procurator entity to the imports
             MailboxConsumer,
+            AdministrativeMailboxItemData,
+            JudicialMailboxItemData,
         ]),
     ],
     controllers: [MailboxItemController],

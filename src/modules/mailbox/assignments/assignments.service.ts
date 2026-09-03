@@ -16,6 +16,33 @@ import { MailboxProcuratorStatus } from './enum/mailbox-procurator-status.enum';
 export class AssignmentsService {
     constructor(private readonly dataSource: DataSource) {}
 
+    async getAllActiveMailboxConsumers(): Promise<
+        Array<{
+            mailboxConsumerId: number;
+            mailboxNumber: number;
+            mailboxSite: string;
+            consumerId: number;
+            consumerName: string;
+        }>
+    > {
+        const assignments = await this.dataSource.manager.find(
+            MailboxConsumer,
+            {
+                where: { status: MailboxConsumerStatus.ACTIVE },
+                relations: { mailbox: true, consumer: true },
+                order: { mailbox: { mailboxSite: 'ASC', mail_number: 'ASC' } },
+            },
+        );
+
+        return assignments.map((assignment) => ({
+            mailboxConsumerId: assignment.id,
+            mailboxNumber: assignment.mailbox.mail_number,
+            mailboxSite: assignment.mailbox.mailboxSite,
+            consumerId: assignment.consumer.id,
+            consumerName: assignment.consumer.name,
+        }));
+    }
+
     async getActiveProcuratorsByConsumer(
         consumerId: number,
     ): Promise<{
