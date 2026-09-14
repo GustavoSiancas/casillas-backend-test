@@ -44,6 +44,12 @@ export class MailboxItemResponseDto {
     @ApiProperty({ nullable: true })
     description: string | null;
 
+    @ApiProperty({ nullable: true })
+    materia: string | null;
+
+    @ApiProperty({ nullable: true })
+    resolucion: string | null;
+
     @ApiProperty({ enum: MailboxItemStatus })
     status: MailboxItemStatus;
 
@@ -82,6 +88,8 @@ export class MailboxItemResponseDto {
             documentDate: item.documentDate,
             type: item.type,
             description: item.description,
+            materia: item.materia,
+            resolucion: item.resolucion,
             status: item.status,
             accessStatus: item.accessStatus,
             isActive: item.isActive,
