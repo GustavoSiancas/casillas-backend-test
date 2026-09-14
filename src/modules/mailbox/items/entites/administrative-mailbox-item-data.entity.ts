@@ -16,18 +16,6 @@ export class AdministrativeMailboxItemData {
     @Column({ type: 'varchar', nullable: true })
     juzgado: string | null;
 
-    @Column({ type: 'varchar', nullable: true })
-    materia: string | null;
-
-    @Column({ type: 'varchar', nullable: true })
-    resolucion: string | null;
-
-    @Column({ type: 'varchar', nullable: true })
-    demandante: string | null;
-
-    @Column({ type: 'varchar', nullable: true })
-    descripcion: string | null;
-
     // The frontend defines the administrative document type.
     @Column({ type: 'varchar', nullable: true })
     tipo: string | null;

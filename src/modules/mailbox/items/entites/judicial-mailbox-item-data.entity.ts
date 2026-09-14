@@ -68,19 +68,7 @@ export class JudicialMailboxItemData {
     s_sede: string | null;
 
     @Column({ type: 'varchar', nullable: true })
-    s_demandan: string | null;
-
-    @Column({ type: 'varchar', nullable: true })
-    s_demandad: string | null;
-
-    @Column({ type: 'varchar', nullable: true })
-    s_materia: string | null;
-
-    @Column({ type: 'varchar', nullable: true })
     s_cuaderno: string | null;
-
-    @Column({ type: 'varchar', nullable: true })
-    s_resoluci: string | null;
 
     @Column({ type: 'varchar', nullable: true })
     s_notifica: string | null;

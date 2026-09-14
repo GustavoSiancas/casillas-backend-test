@@ -12,15 +12,13 @@ import {
     Patch,
     Post,
     Query,
+    Res,
     UploadedFile,
     UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from '@nestjs/platform-express';
 
-import {
-    JudicialImportResult,
-    MailboxItemService,
-} from "./item.service";
+import { MailboxItemService } from "./item.service";
 import { CreateMailboxItemDto } from "./dto/create-mailbox-item.dto";
 import {
     MailboxItemAccessStatus,
@@ -28,7 +26,9 @@ import {
 } from "./entites/mailbox-item.entity";
 import { MailboxItemResponseDto } from './dto/mailbox-item.response.dto';
 import { PaginatedResponse } from 'src/common/dtos/pages/pagination.response';
-import { ApiBody, ApiConsumes, ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiProduces, ApiQuery } from '@nestjs/swagger';
+import type { Response } from 'express';
+import * as XLSX from 'xlsx';
 import { ImportJudicialMailboxItemsDto } from './dto/import-judicial-mailbox-items.dto';
 import { CreateAdministrativeMailboxItemDto } from './dto/create-administrative-mailbox-item.dto';
 import { AdministrativeMailboxItemData } from './entites/administrative-mailbox-item-data.entity';
@@ -80,6 +80,8 @@ export class MailboxItemController {
         enum: JudicialMailboxItemInstitution,
         required: true,
     })
+    @ApiQuery({ name: 'fecha', type: String, required: true })
+    @ApiProduces('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     @ApiBody({
         schema: {
             type: 'object',
@@ -94,9 +96,36 @@ export class MailboxItemController {
         @Query('sede', new ParseEnumPipe(MailboxSite)) sede: MailboxSite,
         @Query('tipo', new ParseEnumPipe(JudicialMailboxItemInstitution))
         tipo: JudicialMailboxItemInstitution,
-    ): Promise<JudicialImportResult> {
-        const dto: ImportJudicialMailboxItemsDto = { sede, tipo };
-        return this.mailboxItemService.importJudicialMailboxItems(file, dto);
+        @Query('fecha') fecha: string,
+        @Res({ passthrough: true }) response: Response,
+    ): Promise<Buffer> {
+        const dto: ImportJudicialMailboxItemsDto = { sede, tipo, fecha };
+        return this.mailboxItemService
+            .importJudicialMailboxItems(file, dto)
+            .then((result) => {
+                const worksheet = XLSX.utils.json_to_sheet(
+                    result.report.map((row) => ({
+                        Fila: row.row,
+                        Casilla: row.mailboxNumber,
+                        'Nro. expediente': row.caseNumber ?? '',
+                        'Subida correctamente': row.uploaded ? 'Sí' : 'No',
+                        'Mailbox consumer ID': row.mailboxConsumerId ?? '',
+                        'Estado de acceso': row.accessStatus ?? '',
+                        Detalle: row.detail,
+                    })),
+                );
+                worksheet['!cols'] = [
+                    { wch: 8 }, { wch: 12 }, { wch: 20 }, { wch: 24 },
+                    { wch: 22 }, { wch: 22 }, { wch: 65 },
+                ];
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, 'Resultado importación');
+                response.set({
+                    'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                    'Content-Disposition': 'attachment; filename="resultado-importacion-judicial.xlsx"',
+                });
+                return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+            });
     }
 
     @Post('administrative')

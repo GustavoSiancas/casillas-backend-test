@@ -32,8 +32,8 @@ export class MailboxItemResponseDto {
     @ApiProperty()
     name: string;
 
-    @ApiProperty()
-    caseNumber: string;
+    @ApiProperty({ nullable: true })
+    caseNumber: string | null;
 
     @ApiProperty()
     documentDate: Date;
@@ -41,8 +41,8 @@ export class MailboxItemResponseDto {
     @ApiProperty({ enum: MailboxItemType })
     type: MailboxItemType;
 
-    @ApiProperty()
-    description: string;
+    @ApiProperty({ nullable: true })
+    description: string | null;
 
     @ApiProperty({ enum: MailboxItemStatus })
     status: MailboxItemStatus;
@@ -55,6 +55,12 @@ export class MailboxItemResponseDto {
 
     @ApiProperty()
     receivedAt: Date;
+
+    @ApiProperty({ nullable: true })
+    visibleAt: Date | null;
+
+    @ApiProperty({ nullable: true })
+    requestedAt: Date | null;
 
     @ApiProperty()
     createdAt: Date;
@@ -80,6 +86,8 @@ export class MailboxItemResponseDto {
             accessStatus: item.accessStatus,
             isActive: item.isActive,
             receivedAt: item.receivedAt,
+            visibleAt: item.visibleAt,
+            requestedAt: item.requestedAt,
             createdAt: item.createdAt,
             updatedAt: item.updatedAt,
         };

@@ -29,8 +29,8 @@ import { CreateAdministrativeMailboxItemDto } from './dto/create-administrative-
 const JUDICIAL_DATA_FIELDS = [
     'direccion', 'x_desc_ubigeo', 'observa', 'orden', 'codcli', 'u_nomb_abo',
     'u_nro_cole', 'u_nomb_lit', 'u_le_litg', 'u_nro_expe', 'u_fecha',
-    's_nro_expe', 's_dependen', 's_sede', 's_demandan', 's_demandad',
-    's_materia', 's_cuaderno', 's_resoluci', 's_notifica', 'fecha', 'hora',
+    's_nro_expe', 's_dependen', 's_sede', 's_cuaderno', 's_notifica', 'fecha',
+    'hora',
     'nro_cuenta', 'descar', 'ingreso', 'nuevo', 'cod_mensa', 'fecha_sal',
     'f_descargo', 'nueva_dir', 'telefono', 'fecha_des', 'hora_des', 'hora_entre',
     'fecha_entr', 'clasifica', 'fecha_cla', 'hora_cla', 'chequeo', 'ind_estado',
@@ -41,11 +41,14 @@ type JudicialSpreadsheetRow = Record<string, unknown>;
 
 export interface JudicialImportResult {
     imported: number;
-    mailboxItemIds: number[];
-    skipped: Array<{
+    report: Array<{
         row: number;
         mailboxNumber: number;
-        reason: string;
+        caseNumber: string | null;
+        uploaded: boolean;
+        mailboxConsumerId: number | null;
+        accessStatus: MailboxItemAccessStatus | null;
+        detail: string;
     }>;
 }
 
@@ -111,6 +114,7 @@ export class MailboxItemService {
             throw new BadRequestException('Solo se permiten archivos .xls');
         }
 
+        const visibleAt = this.parseInputDate(dto.fecha, 'fecha');
         let rows: JudicialSpreadsheetRow[];
         try {
             const workbook = XLSX.read(file.buffer, { type: 'buffer' });
@@ -128,8 +132,8 @@ export class MailboxItemService {
         }
 
         return this.dataSource.transaction(async (manager) => {
-            const mailboxItemIds: number[] = [];
-            const skipped: JudicialImportResult['skipped'] = [];
+            let imported = 0;
+            const report: JudicialImportResult['report'] = [];
 
             for (const [index, rawRow] of rows.entries()) {
                 const row = this.normalizeSpreadsheetRow(rawRow);
@@ -152,10 +156,14 @@ export class MailboxItemService {
                     where: { mail_number: mailboxNumber, mailboxSite: dto.sede },
                 });
                 if (!mailbox) {
-                    skipped.push({
+                    report.push({
                         row: rowNumber,
                         mailboxNumber,
-                        reason: `No existe la casilla ${mailboxNumber} en ${dto.sede}`,
+                        caseNumber,
+                        uploaded: false,
+                        mailboxConsumerId: null,
+                        accessStatus: null,
+                        detail: `No existe la casilla ${mailboxNumber} en ${dto.sede}`,
                     });
                     continue;
                 }
@@ -179,12 +187,18 @@ export class MailboxItemService {
                         caseNumber,
                         documentDate: this.parseSpreadsheetDate(row.fecha, rowNumber),
                         type: MailboxItemType.JUDICIAL,
-                        description: '',
+                        demandante: row.s_demandan || null,
+                        demandado: row.s_demandad || null,
+                        materia: row.s_materia || null,
+                        resolucion: row.s_resoluci || null,
+                        description: null,
                         mailbox,
                         mailboxConsumer: assignment ?? null,
-                        status: MailboxItemStatus.DRAFT,
+                        status: MailboxItemStatus.PENDING,
                         accessStatus,
                         receivedAt: new Date(),
+                        visibleAt,
+                        requestedAt: null,
                     }),
                 );
 
@@ -198,13 +212,23 @@ export class MailboxItemService {
                         mailboxItem,
                     }),
                 );
-                mailboxItemIds.push(mailboxItem.id);
+                imported++;
+                report.push({
+                    row: rowNumber,
+                    mailboxNumber,
+                    caseNumber,
+                    uploaded: true,
+                    mailboxConsumerId: assignment?.id ?? null,
+                    accessStatus,
+                    detail: assignment
+                        ? 'Notificación subida y asociada a mailbox_consumer'
+                        : 'Notificación subida; la casilla no tiene mailbox_consumer activo',
+                });
             }
 
             return {
-                imported: mailboxItemIds.length,
-                mailboxItemIds,
-                skipped,
+                imported,
+                report,
             };
         });
     }
@@ -238,16 +262,22 @@ export class MailboxItemService {
 
             const mailboxItem = await manager.save(
                 manager.create(MailboxItem, {
-                    name: dto.name,
-                    caseNumber: dto.caseNumber,
-                    documentDate: new Date(dto.documentDate),
+                    name: dto.nroExpediente ?? '',
+                    caseNumber: dto.nroExpediente ?? null,
+                    documentDate: new Date(dto.fecha),
                     type: MailboxItemType.ADMINISTRATIVE,
-                    description: dto.descripcion ?? '',
+                    demandante: dto.demandante ?? null,
+                    demandado: dto.demandado ?? null,
+                    materia: dto.materia ?? null,
+                    resolucion: dto.resolucion ?? null,
+                    description: null,
                     mailbox: assignment.mailbox,
                     mailboxConsumer: assignment,
                     status: MailboxItemStatus.PENDING,
                     accessStatus,
                     receivedAt: new Date(),
+                    visibleAt: new Date(dto.fecha),
+                    requestedAt: null,
                 }),
             );
 
@@ -255,10 +285,6 @@ export class MailboxItemService {
                 manager.create(AdministrativeMailboxItemData, {
                     mailboxItem,
                     juzgado: dto.juzgado ?? null,
-                    materia: dto.materia ?? null,
-                    resolucion: dto.resolucion ?? null,
-                    demandante: dto.demandante ?? null,
-                    descripcion: dto.descripcion ?? null,
                     tipo: dto.tipo ?? null,
                 }),
             );
@@ -368,7 +394,7 @@ export class MailboxItemService {
                     description: dto.description,
                     mailbox,
                     mailboxConsumer: assignment ?? null,
-                    status: MailboxItemStatus.DRAFT,
+                    status: MailboxItemStatus.PENDING,
                     accessStatus,
                     receivedAt: new Date(),
                 }),
@@ -439,15 +465,16 @@ export class MailboxItemService {
 
         const previousStatus = mailboxItem.status;
 
-        if (mailboxItem.status === MailboxItemStatus.DRAFT && nextStatus === MailboxItemStatus.PENDING) {
+        if (mailboxItem.status === MailboxItemStatus.PENDING && nextStatus === MailboxItemStatus.ON_VIEW) {
             if (mailboxItem.accessStatus !== MailboxItemAccessStatus.VISIBLE) {
                 throw new ConflictException(
                     'El item no está habilitado para mostrarse al consumidor',
                 );
             }
             mailboxItem.status = nextStatus;
-        } else if (mailboxItem.status === MailboxItemStatus.PENDING && nextStatus === MailboxItemStatus.REQUESTED) {
+        } else if (mailboxItem.status === MailboxItemStatus.ON_VIEW && nextStatus === MailboxItemStatus.REQUESTED) {
             mailboxItem.status = nextStatus;
+            mailboxItem.requestedAt = new Date();
         } else if (mailboxItem.status === MailboxItemStatus.REQUESTED && nextStatus === MailboxItemStatus.DELIVERED) {
             mailboxItem.status = nextStatus;
         } else {
@@ -482,8 +509,11 @@ export class MailboxItemService {
             );
         }
 
-        if (mailboxItem.status === MailboxItemStatus.PENDING && nextStatus === MailboxItemStatus.REQUESTED) {
+        if (mailboxItem.status === MailboxItemStatus.PENDING && nextStatus === MailboxItemStatus.ON_VIEW) {
             mailboxItem.status = nextStatus;
+        } else if (mailboxItem.status === MailboxItemStatus.ON_VIEW && nextStatus === MailboxItemStatus.REQUESTED) {
+            mailboxItem.status = nextStatus;
+            mailboxItem.requestedAt = new Date();
         } else {
             throw new ConflictException(`Invalid status transition from ${previousStatus} to ${nextStatus}`);
         }
@@ -557,5 +587,11 @@ export class MailboxItemService {
             date.setUTCHours(23, 59, 59, 999);
         }
         return date;
+    }
+
+    private parseInputDate(value: string, field: string): Date {
+        const date = new Date(value);
+        if (value && !Number.isNaN(date.getTime())) return date;
+        throw new BadRequestException(`${field} debe ser una fecha válida`);
     }
 }

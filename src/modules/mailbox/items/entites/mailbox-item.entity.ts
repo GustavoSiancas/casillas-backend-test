@@ -6,8 +6,8 @@ import { AdministrativeMailboxItemData } from "./administrative-mailbox-item-dat
 import { JudicialMailboxItemData } from "./judicial-mailbox-item-data.entity";
 
 export enum MailboxItemStatus {
-    DRAFT = "DRAFT",
     PENDING = "PENDING",
+    ON_VIEW = "ON_VIEW",
     REQUESTED = "REQUESTED",
     DELIVERED = "DELIVERED",
 }
@@ -31,8 +31,8 @@ export class MailboxItem {
     @Column()
     name: string;
 
-    @Column({ name: 'case_number' })
-    caseNumber: string;
+    @Column({ name: 'case_number', nullable: true })
+    caseNumber: string | null;
 
     @Column({ name: 'document_date', type: 'datetime' })
     documentDate: Date;
@@ -69,12 +69,24 @@ export class MailboxItem {
     @OneToOne(() => JudicialMailboxItemData, data => data.mailboxItem)
     judicialData: JudicialMailboxItemData | null;
 
-    @Column()
-    description: string;
+    @Column({ type: 'text', nullable: true })
+    demandante: string | null;
+
+    @Column({ type: 'text', nullable: true })
+    demandado: string | null;
+
+    @Column({ type: 'text', nullable: true })
+    materia: string | null;
+
+    @Column({ type: 'text', nullable: true })
+    resolucion: string | null;
+
+    @Column({ type: 'text', nullable: true })
+    description: string | null;
 
     @Column(
         { 
-        type: "enum", enum: MailboxItemStatus, default: MailboxItemStatus.DRAFT
+        type: "enum", enum: MailboxItemStatus, default: MailboxItemStatus.PENDING
         }
     )
     status: MailboxItemStatus;
@@ -88,6 +100,12 @@ export class MailboxItem {
 
     @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
     receivedAt: Date;
+
+    @Column({ type: 'datetime', nullable: true })
+    visibleAt: Date | null;
+
+    @Column({ type: 'datetime', nullable: true })
+    requestedAt: Date | null;
 
     @Column({
         type: "boolean",

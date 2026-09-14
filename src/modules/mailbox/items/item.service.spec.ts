@@ -40,7 +40,7 @@ describe('MailboxItemService', () => {
         return { service, manager, mailbox };
     }
 
-    it('creates a visible draft item for an active paid assignment', async () => {
+    it('creates a visible pending item for an active paid assignment', async () => {
         const assignment = {
             id: 8,
             status: MailboxConsumerStatus.ACTIVE,
@@ -55,13 +55,13 @@ describe('MailboxItemService', () => {
             expect.objectContaining({
                 mailbox,
                 mailboxConsumer: assignment,
-                status: MailboxItemStatus.DRAFT,
+                status: MailboxItemStatus.PENDING,
                 accessStatus: MailboxItemAccessStatus.VISIBLE,
             }),
         );
     });
 
-    it('blocks a draft item for an unpaid assignment', async () => {
+    it('blocks a pending item for an unpaid assignment', async () => {
         const assignment = {
             id: 8,
             status: MailboxConsumerStatus.ACTIVE,
@@ -210,7 +210,7 @@ describe('MailboxItemService', () => {
             10,
             [MailboxItemAccessStatus.VISIBLE],
             8,
-            MailboxItemStatus.DRAFT,
+            MailboxItemStatus.PENDING,
             '2026-08-01',
             '2026-08-28',
         );
@@ -221,7 +221,7 @@ describe('MailboxItemService', () => {
         );
         expect(queryBuilder.andWhere).toHaveBeenCalledWith(
             'item.status = :status',
-            { status: MailboxItemStatus.DRAFT },
+            { status: MailboxItemStatus.PENDING },
         );
         expect(queryBuilder.andWhere).toHaveBeenCalledWith(
             'item.receivedAt >= :fromDate',

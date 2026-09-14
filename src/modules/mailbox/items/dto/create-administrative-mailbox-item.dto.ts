@@ -1,13 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import {
-    IsDateString,
-    IsInt,
-    IsNotEmpty,
-    IsOptional,
-    IsString,
-    Min,
-} from 'class-validator';
+import { IsDateString, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateAdministrativeMailboxItemDto {
     @ApiProperty({ minimum: 1 })
@@ -16,19 +9,19 @@ export class CreateAdministrativeMailboxItemDto {
     @Min(1)
     mailboxConsumerId: number;
 
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    name: string;
-
-    @ApiProperty()
-    @IsString()
-    @IsNotEmpty()
-    caseNumber: string;
-
     @ApiProperty({ description: 'Fecha propia de la notificación.' })
     @IsDateString()
-    documentDate: string;
+    fecha: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    nroExpediente?: string;
+
+    @ApiPropertyOptional()
+    @IsOptional()
+    @IsString()
+    resolucion?: string;
 
     @ApiPropertyOptional()
     @IsOptional()
@@ -40,10 +33,10 @@ export class CreateAdministrativeMailboxItemDto {
     @IsString()
     materia?: string;
 
-    @ApiPropertyOptional()
+    @ApiPropertyOptional({ description: 'Tipo definido por el frontend.' })
     @IsOptional()
     @IsString()
-    resolucion?: string;
+    tipo?: string;
 
     @ApiPropertyOptional()
     @IsOptional()
@@ -53,10 +46,5 @@ export class CreateAdministrativeMailboxItemDto {
     @ApiPropertyOptional()
     @IsOptional()
     @IsString()
-    descripcion?: string;
-
-    @ApiPropertyOptional({ description: 'Tipo definido por el frontend.' })
-    @IsOptional()
-    @IsString()
-    tipo?: string;
+    demandado?: string;
 }
