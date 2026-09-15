@@ -23,22 +23,71 @@ import { CreateMailboxItemDto } from "./dto/create-mailbox-item.dto";
 import {
     MailboxItemAccessStatus,
     MailboxItemStatus,
+    MailboxItemType,
 } from "./entites/mailbox-item.entity";
 import { MailboxItemResponseDto } from './dto/mailbox-item.response.dto';
 import { PaginatedResponse } from 'src/common/dtos/pages/pagination.response';
 import { ApiBody, ApiConsumes, ApiProduces, ApiQuery } from '@nestjs/swagger';
 import type { Response } from 'express';
-import * as XLSX from 'xlsx';
+import * as XLSX from 'xlsx-js-style';
 import { ImportJudicialMailboxItemsDto } from './dto/import-judicial-mailbox-items.dto';
 import { CreateAdministrativeMailboxItemDto } from './dto/create-administrative-mailbox-item.dto';
 import { AdministrativeMailboxItemData } from './entites/administrative-mailbox-item-data.entity';
 import { MailboxSite } from '../mailboxes/enum/mailbox.enum';
 import { JudicialMailboxItemInstitution } from './entites/judicial-mailbox-item-data.entity';
+import { DeliverMailboxItemsDto } from './dto/deliver-mailbox-items.dto';
+import { MailboxItemDeliveryService } from './mailbox-item-delivery.service';
+
+const JUDICIAL_REPORT_ASSIGNMENT = {
+    [MailboxItemAccessStatus.VISIBLE]: {
+        status: 'ASIGNADA',
+        detail: 'Se asignó a la casilla.',
+    },
+    [MailboxItemAccessStatus.UNASSIGNED]: {
+        status: 'SIN ASIGNAR',
+        detail: 'No se asignó porque esta casilla no tiene usuario asignado.',
+    },
+    [MailboxItemAccessStatus.BLOCKED_UNPAID]: {
+        status: 'ASIGNADA PERO NO VISIBLE',
+        detail:
+            'Se asignó a la casilla, pero no estará visible porque no está al día en los pagos.',
+    },
+} as const;
+
+const REPORT_STYLES = {
+    title: {
+        font: { bold: true, color: { rgb: 'FFFFFF' }, sz: 14 },
+        fill: { fgColor: { rgb: '1F4E78' } },
+        alignment: { horizontal: 'center', vertical: 'center' },
+    },
+    subtitle: {
+        font: { italic: true, color: { rgb: '44546A' } },
+        alignment: { horizontal: 'left' },
+    },
+    header: {
+        font: { bold: true, color: { rgb: 'FFFFFF' } },
+        fill: { fgColor: { rgb: '4472C4' } },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+    },
+    assigned: {
+        font: { bold: true, color: { rgb: '006100' } },
+        fill: { fgColor: { rgb: 'C6EFCE' } },
+    },
+    unassigned: {
+        font: { bold: true, color: { rgb: '9C0006' } },
+        fill: { fgColor: { rgb: 'FFC7CE' } },
+    },
+    blocked: {
+        font: { bold: true, color: { rgb: '9C6500' } },
+        fill: { fgColor: { rgb: 'FFEB9C' } },
+    },
+} as const;
 
 @Controller("mailbox-items")
 export class MailboxItemController {
     constructor(
         private readonly mailboxItemService: MailboxItemService,
+        private readonly mailboxItemDeliveryService: MailboxItemDeliveryService,
     ) {}
 
     @Get()
@@ -91,41 +140,178 @@ export class MailboxItemController {
             },
         },
     })
-    importJudicialMailboxItems(
+    async importJudicialMailboxItems(
         @UploadedFile() file: { originalname: string; buffer: Buffer } | undefined,
         @Query('sede', new ParseEnumPipe(MailboxSite)) sede: MailboxSite,
         @Query('tipo', new ParseEnumPipe(JudicialMailboxItemInstitution))
         tipo: JudicialMailboxItemInstitution,
         @Query('fecha') fecha: string,
-        @Res({ passthrough: true }) response: Response,
-    ): Promise<Buffer> {
+        @Res() response: Response,
+    ): Promise<void> {
         const dto: ImportJudicialMailboxItemsDto = { sede, tipo, fecha };
-        return this.mailboxItemService
-            .importJudicialMailboxItems(file, dto)
-            .then((result) => {
-                const worksheet = XLSX.utils.json_to_sheet(
+        const result = await this.mailboxItemService.importJudicialMailboxItems(
+            file,
+            dto,
+        );
+        const reportDate = this.formatUploadDate(new Date());
+                const worksheet = XLSX.utils.aoa_to_sheet([
+                    ['REPORTE DE CARGA DE NOTIFICACIONES JUDICIALES'],
+                    [`Fecha de carga: ${reportDate}`],
+                    [],
+                ]);
+                XLSX.utils.sheet_add_json(worksheet,
                     result.report.map((row) => ({
                         Fila: row.row,
                         Casilla: row.mailboxNumber,
                         'Nro. expediente': row.caseNumber ?? '',
                         'Subida correctamente': row.uploaded ? 'Sí' : 'No',
-                        'Mailbox consumer ID': row.mailboxConsumerId ?? '',
-                        'Estado de acceso': row.accessStatus ?? '',
-                        Detalle: row.detail,
-                    })),
+                        'Usuario asignado': row.consumerName ?? 'Sin usuario asignado',
+                        Estado: this.getJudicialAssignmentStatus(row.accessStatus),
+                        Detalle: this.getJudicialAssignmentDetail(
+                            row.accessStatus,
+                            row.detail,
+                        ),
+                    })), { origin: 'A4' },
                 );
                 worksheet['!cols'] = [
                     { wch: 8 }, { wch: 12 }, { wch: 20 }, { wch: 24 },
                     { wch: 22 }, { wch: 22 }, { wch: 65 },
                 ];
+                worksheet['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 6 } },
+                ];
+                worksheet['!autofilter'] = {
+                    ref: `A4:G${Math.max(result.report.length + 4, 4)}`,
+                };
+                worksheet['!freeze'] = { xSplit: 0, ySplit: 4 };
+                this.styleReportWorksheet(
+                    worksheet,
+                    7,
+                    'F',
+                    result.report.length,
+                );
+                const summary = new Map<
+                    string,
+                    {
+                        Casilla: number;
+                        Estado: string;
+                        'Usuario asignado': string;
+                        'Cantidad de registros subidos': number;
+                    }
+                >();
+                for (const row of result.report.filter((report) => report.uploaded)) {
+                    const estado = this.getJudicialAssignmentStatus(row.accessStatus);
+                    const usuario = row.consumerName ?? 'Sin usuario asignado';
+                    const key = `${row.mailboxNumber}:${estado}:${usuario}`;
+                    const existing = summary.get(key);
+
+                    if (existing) {
+                        existing['Cantidad de registros subidos']++;
+                    } else {
+                        summary.set(key, {
+                            Casilla: row.mailboxNumber,
+                            Estado: estado,
+                            'Usuario asignado': usuario,
+                            'Cantidad de registros subidos': 1,
+                        });
+                    }
+                }
+                const summaryWorksheet = XLSX.utils.aoa_to_sheet([
+                    ['RESUMEN DE CASILLAS'],
+                    [`Fecha de carga: ${reportDate}`],
+                    [],
+                ]);
+                XLSX.utils.sheet_add_json(summaryWorksheet, [...summary.values()], {
+                    origin: 'A4',
+                    header: [
+                        'Casilla',
+                        'Estado',
+                        'Usuario asignado',
+                        'Cantidad de registros subidos',
+                    ],
+                });
+                summaryWorksheet['!cols'] = [
+                    { wch: 12 }, { wch: 30 }, { wch: 30 }, { wch: 32 },
+                ];
+                summaryWorksheet['!merges'] = [
+                    { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+                ];
+                summaryWorksheet['!autofilter'] = {
+                    ref: `A4:D${Math.max(summary.size + 4, 4)}`,
+                };
+                summaryWorksheet['!freeze'] = { xSplit: 0, ySplit: 4 };
+                this.styleReportWorksheet(summaryWorksheet, 4, 'B', summary.size);
                 const workbook = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(workbook, worksheet, 'Resultado importación');
-                response.set({
+                XLSX.utils.book_append_sheet(
+                    workbook,
+                    summaryWorksheet,
+                    'Resumen por casilla',
+                );
+                const output = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+                response.status(HttpStatus.CREATED).set({
                     'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                    'Content-Disposition': 'attachment; filename="resultado-importacion-judicial.xlsx"',
+                    'Content-Disposition': `attachment; filename="RCN_${reportDate}.xlsx"`,
+                    'Content-Length': output.length.toString(),
                 });
-                return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-            });
+                response.send(output);
+    }
+
+    private styleReportWorksheet(
+        worksheet: XLSX.WorkSheet,
+        columnCount: number,
+        statusColumn: string,
+        recordCount: number,
+    ): void {
+        worksheet.A1.s = REPORT_STYLES.title;
+        worksheet.A2.s = REPORT_STYLES.subtitle;
+
+        for (let index = 0; index < columnCount; index++) {
+            const column = String.fromCharCode(65 + index);
+            worksheet[`${column}4`].s = REPORT_STYLES.header;
+        }
+
+        for (let row = 5; row < recordCount + 5; row++) {
+            const statusCell = worksheet[`${statusColumn}${row}`];
+            if (!statusCell) continue;
+
+            switch (statusCell.v) {
+                case 'ASIGNADA':
+                    statusCell.s = REPORT_STYLES.assigned;
+                    break;
+                case 'ASIGNADA PERO NO VISIBLE':
+                    statusCell.s = REPORT_STYLES.blocked;
+                    break;
+                case 'SIN ASIGNAR':
+                    statusCell.s = REPORT_STYLES.unassigned;
+                    break;
+            }
+        }
+    }
+
+    private getJudicialAssignmentStatus(
+        accessStatus: MailboxItemAccessStatus | null,
+    ): string {
+        return accessStatus
+            ? JUDICIAL_REPORT_ASSIGNMENT[accessStatus].status
+            : 'SIN ASIGNAR';
+    }
+
+    private formatUploadDate(date: Date): string {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
+    }
+
+    private getJudicialAssignmentDetail(
+        accessStatus: MailboxItemAccessStatus | null,
+        fallbackDetail: string,
+    ): string {
+        return accessStatus
+            ? JUDICIAL_REPORT_ASSIGNMENT[accessStatus].detail
+            : fallbackDetail;
     }
 
     @Post('administrative')
@@ -142,6 +328,12 @@ export class MailboxItemController {
             mailboxItem: MailboxItemResponseDto.fromEntity(result.mailboxItem),
             administrativeData: result.administrativeData,
         };
+    }
+
+    @Post('deliver')
+    @HttpCode(HttpStatus.CREATED)
+    async deliverMailboxItems(@Body() dto: DeliverMailboxItemsDto) {
+        return this.mailboxItemDeliveryService.deliverMailboxItems(dto);
     }
 
     @Get('collaborator/consumer/:consumerId/active-mailbox-items')
@@ -250,6 +442,47 @@ export class MailboxItemController {
             consumerId,
         );
         return items.map(MailboxItemResponseDto.fromEntity);
+    }
+
+    @Get('mailbox/:mailboxId')
+    @ApiQuery({ name: 'page', required: false, type: Number })
+    @ApiQuery({ name: 'limit', required: false, type: Number })
+    @ApiQuery({ name: 'accessStatus', required: false, enum: MailboxItemAccessStatus })
+    @ApiQuery({ name: 'status', required: false, enum: MailboxItemStatus })
+    @ApiQuery({ name: 'type', required: false, enum: MailboxItemType })
+    @ApiQuery({ name: 'fromDate', required: false, type: String })
+    @ApiQuery({ name: 'toDate', required: false, type: String })
+    async getMailboxItemsByMailboxId(
+        @Param('mailboxId', ParseIntPipe) mailboxId: number,
+        @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+        @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+        @Query(
+            'accessStatus',
+            new ParseEnumPipe(MailboxItemAccessStatus, { optional: true }),
+        )
+        accessStatus?: MailboxItemAccessStatus,
+        @Query('status', new ParseEnumPipe(MailboxItemStatus, { optional: true }))
+        status?: MailboxItemStatus,
+        @Query('type', new ParseEnumPipe(MailboxItemType, { optional: true }))
+        type?: MailboxItemType,
+        @Query('fromDate') fromDate?: string,
+        @Query('toDate') toDate?: string,
+    ): Promise<PaginatedResponse<MailboxItemResponseDto>> {
+        const result = await this.mailboxItemService.getMailboxItemsByMailboxId(
+            mailboxId,
+            Math.max(page, 1),
+            Math.min(Math.max(limit, 1), 100),
+            accessStatus,
+            status,
+            type,
+            fromDate,
+            toDate,
+        );
+
+        return new PaginatedResponse(
+            result.data.map(MailboxItemResponseDto.fromEntity),
+            result.pagination,
+        );
     }
 
     @Get(":id")

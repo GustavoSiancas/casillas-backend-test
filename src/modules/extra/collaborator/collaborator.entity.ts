@@ -1,5 +1,5 @@
 import { MailboxSite } from "src/modules/mailbox/mailboxes/enum/mailbox.enum";
-import { MailboxItemDeliverable } from "src/modules/mailbox/items/entites/mailbox-item-deliverable.entity";
+import { MailboxItemDeliverableGroup } from "src/modules/mailbox/items/entites/mailbox-item-deliverable-group.entity";
 import { Users } from "src/modules/extra/users/users.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
@@ -21,10 +21,10 @@ export class Collaborator {
     user: Users;
 
     @OneToMany(
-        () => MailboxItemDeliverable,
-        (deliverable) => deliverable.collaborator,
+        () => MailboxItemDeliverableGroup,
+        (deliveryGroup) => deliveryGroup.collaborator,
     )
-    mailboxItemDeliverables: MailboxItemDeliverable[];
+    mailboxItemDeliverableGroups: MailboxItemDeliverableGroup[];
 
     @Column(
         {

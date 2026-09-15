@@ -1,0 +1,58 @@
+-- Datos de prueba para casillas.
+-- MIRAFLORES: 5001 al 10000 (se asume que "5001 al 1000" fue un typo).
+-- LIMACENTRO: 1 al 5000.
+-- LIMANORTE: 1 al 2500.
+-- Es seguro ejecutarlo mas de una vez por la restriccion unica
+-- (mail_number, mailboxSite).
+
+START TRANSACTION;
+
+CREATE TEMPORARY TABLE seed_mailbox_numbers (
+    n INT NOT NULL PRIMARY KEY
+);
+
+INSERT INTO seed_mailbox_numbers (n)
+SELECT
+    ones.n + tens.n * 10 + hundreds.n * 100 + thousands.n * 1000 + 1
+FROM (
+    SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+    UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+    UNION ALL SELECT 8 UNION ALL SELECT 9
+) ones
+CROSS JOIN (
+    SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+    UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+    UNION ALL SELECT 8 UNION ALL SELECT 9
+) tens
+CROSS JOIN (
+    SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+    UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+    UNION ALL SELECT 8 UNION ALL SELECT 9
+) hundreds
+CROSS JOIN (
+    SELECT 0 AS n UNION ALL SELECT 1 UNION ALL SELECT 2 UNION ALL SELECT 3
+    UNION ALL SELECT 4 UNION ALL SELECT 5 UNION ALL SELECT 6 UNION ALL SELECT 7
+    UNION ALL SELECT 8 UNION ALL SELECT 9
+) thousands;
+
+INSERT INTO mailbox (mail_number, mailboxSite, status)
+SELECT n, 'LIMACENTRO', 'ACTIVE'
+FROM seed_mailbox_numbers
+WHERE n BETWEEN 1 AND 5000
+ON DUPLICATE KEY UPDATE mail_number = VALUES(mail_number);
+
+INSERT INTO mailbox (mail_number, mailboxSite, status)
+SELECT n, 'LIMANORTE', 'ACTIVE'
+FROM seed_mailbox_numbers
+WHERE n BETWEEN 1 AND 2500
+ON DUPLICATE KEY UPDATE mail_number = VALUES(mail_number);
+
+INSERT INTO mailbox (mail_number, mailboxSite, status)
+SELECT n, 'MIRAFLORES', 'ACTIVE'
+FROM seed_mailbox_numbers
+WHERE n BETWEEN 5001 AND 10000
+ON DUPLICATE KEY UPDATE mail_number = VALUES(mail_number);
+
+DROP TEMPORARY TABLE seed_mailbox_numbers;
+
+COMMIT;

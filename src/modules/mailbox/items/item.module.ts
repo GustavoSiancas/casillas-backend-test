@@ -6,9 +6,13 @@ import { MailboxItemService } from "./item.service";
 import { MailboxItemController } from "./item.controller";
 import { Procurator } from "src/modules/mailbox/procurator/procurator.entity";
 import { MailboxItemDeliverable } from "./entites/mailbox-item-deliverable.entity";
+import { MailboxItemDeliverableGroup } from './entites/mailbox-item-deliverable-group.entity';
 import { MailboxConsumer } from "src/modules/mailbox/assignments/entities/mailbox-consumer.entity";
 import { AdministrativeMailboxItemData } from "./entites/administrative-mailbox-item-data.entity";
 import { JudicialMailboxItemData } from "./entites/judicial-mailbox-item-data.entity";
+import { MailboxItemStatusService } from './mailbox-item-status.service';
+import { MailboxItemDeliveryService } from './mailbox-item-delivery.service';
+import { MailboxItemStatusScheduler } from './mailbox-item-status.scheduler';
 
 @Module({
     imports: [
@@ -16,6 +20,7 @@ import { JudicialMailboxItemData } from "./entites/judicial-mailbox-item-data.en
             MailboxItem,
             Mailbox,
             MailboxItemDeliverable,
+            MailboxItemDeliverableGroup,
             Procurator, // Add the Procurator entity to the imports
             MailboxConsumer,
             AdministrativeMailboxItemData,
@@ -23,7 +28,12 @@ import { JudicialMailboxItemData } from "./entites/judicial-mailbox-item-data.en
         ]),
     ],
     controllers: [MailboxItemController],
-    providers: [MailboxItemService],
-    exports: [MailboxItemService],
+    providers: [
+        MailboxItemService,
+        MailboxItemStatusService,
+        MailboxItemDeliveryService,
+        MailboxItemStatusScheduler,
+    ],
+    exports: [MailboxItemService, MailboxItemStatusService, MailboxItemDeliveryService],
 })
 export class MailboxItemModule {}

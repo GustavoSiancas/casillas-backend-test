@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsDateString, IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
 import { MailboxItemType } from '../entites/mailbox-item.entity';
 
 export class CreateMailboxItemDto {
@@ -12,10 +12,6 @@ export class CreateMailboxItemDto {
     @IsString()
     @IsNotEmpty()
     caseNumber: string;
-
-    @ApiProperty({ description: 'Fecha propia del documento; no es la fecha de carga.' })
-    @IsDateString()
-    documentDate: string;
 
     @ApiProperty({ enum: MailboxItemType })
     @IsEnum(MailboxItemType)

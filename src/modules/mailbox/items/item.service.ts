@@ -25,6 +25,7 @@ import { ImportJudicialMailboxItemsDto } from './dto/import-judicial-mailbox-ite
 import { JudicialMailboxItemData } from './entites/judicial-mailbox-item-data.entity';
 import { AdministrativeMailboxItemData } from './entites/administrative-mailbox-item-data.entity';
 import { CreateAdministrativeMailboxItemDto } from './dto/create-administrative-mailbox-item.dto';
+import { MailboxItemStatusService } from './mailbox-item-status.service';
 
 const JUDICIAL_DATA_FIELDS = [
     'direccion', 'x_desc_ubigeo', 'observa', 'orden', 'codcli', 'u_nomb_abo',
@@ -47,6 +48,7 @@ export interface JudicialImportResult {
         caseNumber: string | null;
         uploaded: boolean;
         mailboxConsumerId: number | null;
+        consumerName: string | null;
         accessStatus: MailboxItemAccessStatus | null;
         detail: string;
     }>;
@@ -59,6 +61,8 @@ export class MailboxItemService {
         private readonly mailboxItemRepository: Repository<MailboxItem>,
 
         private readonly dataSource: DataSource,
+
+        private readonly mailboxItemStatusService: MailboxItemStatusService,
     ) {}
 
     async getAllMailboxItems(
@@ -91,7 +95,7 @@ export class MailboxItemService {
         }
 
         const [data, total] = await query
-            .orderBy('item.documentDate', 'DESC')
+            .orderBy('item.createdAt', 'DESC')
             .addOrderBy('item.id', 'DESC')
             .skip((page - 1) * limit)
             .take(limit)
@@ -162,6 +166,7 @@ export class MailboxItemService {
                         caseNumber,
                         uploaded: false,
                         mailboxConsumerId: null,
+                        consumerName: null,
                         accessStatus: null,
                         detail: `No existe la casilla ${mailboxNumber} en ${dto.sede}`,
                     });
@@ -185,7 +190,6 @@ export class MailboxItemService {
                     manager.create(MailboxItem, {
                         name,
                         caseNumber,
-                        documentDate: this.parseSpreadsheetDate(row.fecha, rowNumber),
                         type: MailboxItemType.JUDICIAL,
                         demandante: row.s_demandan || null,
                         demandado: row.s_demandad || null,
@@ -206,9 +210,10 @@ export class MailboxItemService {
                     JUDICIAL_DATA_FIELDS.map((field) => [field, row[field] || null]),
                 );
                 await manager.save(
-                    manager.create(JudicialMailboxItemData, {
-                        ...judicialData,
-                        institution: dto.tipo,
+                manager.create(JudicialMailboxItemData, {
+                    ...judicialData,
+                    documentDate: this.parseSpreadsheetDate(row.fecha, rowNumber),
+                    institution: dto.tipo,
                         mailboxItem,
                     }),
                 );
@@ -219,6 +224,7 @@ export class MailboxItemService {
                     caseNumber,
                     uploaded: true,
                     mailboxConsumerId: assignment?.id ?? null,
+                    consumerName: assignment?.consumer?.name ?? null,
                     accessStatus,
                     detail: assignment
                         ? 'Notificación subida y asociada a mailbox_consumer'
@@ -240,6 +246,7 @@ export class MailboxItemService {
         administrativeData: AdministrativeMailboxItemData;
     }> {
         return this.dataSource.transaction(async (manager) => {
+            const visibleAt = this.parsePeruvianDate(dto.fecha, 'fecha');
             const assignment = await manager.findOne(MailboxConsumer, {
                 where: { id: dto.mailboxConsumerId },
                 relations: { mailbox: true, consumer: true },
@@ -264,7 +271,6 @@ export class MailboxItemService {
                 manager.create(MailboxItem, {
                     name: dto.nroExpediente ?? '',
                     caseNumber: dto.nroExpediente ?? null,
-                    documentDate: new Date(dto.fecha),
                     type: MailboxItemType.ADMINISTRATIVE,
                     demandante: dto.demandante ?? null,
                     demandado: dto.demandado ?? null,
@@ -276,7 +282,7 @@ export class MailboxItemService {
                     status: MailboxItemStatus.PENDING,
                     accessStatus,
                     receivedAt: new Date(),
-                    visibleAt: new Date(dto.fecha),
+                    visibleAt,
                     requestedAt: null,
                 }),
             );
@@ -389,7 +395,6 @@ export class MailboxItemService {
                 manager.create(MailboxItem, {
                     name: dto.name,
                     caseNumber: dto.caseNumber,
-                    documentDate: new Date(dto.documentDate),
                     type: dto.type,
                     description: dto.description,
                     mailbox,
@@ -431,6 +436,59 @@ export class MailboxItemService {
         });
     }
 
+    async getMailboxItemsByMailboxId(
+        mailboxId: number,
+        page: number,
+        limit: number,
+        accessStatus?: MailboxItemAccessStatus,
+        status?: MailboxItemStatus,
+        type?: MailboxItemType,
+        fromDate?: string,
+        toDate?: string,
+    ): Promise<PaginatedResponse<MailboxItem>> {
+        const mailboxExists = await this.dataSource.manager.existsBy(Mailbox, {
+            id: mailboxId,
+        });
+        if (!mailboxExists) {
+            throw new NotFoundException(`Mailbox with ID ${mailboxId} not found`);
+        }
+
+        const query = this.mailboxItemRepository
+            .createQueryBuilder('item')
+            .innerJoinAndSelect('item.mailbox', 'mailbox')
+            .leftJoinAndSelect('item.mailboxConsumer', 'mailboxConsumer')
+            .leftJoinAndSelect('mailboxConsumer.consumer', 'consumer')
+            .where('mailbox.id = :mailboxId', { mailboxId });
+
+        if (accessStatus !== undefined) {
+            query.andWhere('item.accessStatus = :accessStatus', { accessStatus });
+        }
+        if (status !== undefined) {
+            query.andWhere('item.status = :status', { status });
+        }
+        if (type !== undefined) {
+            query.andWhere('item.type = :type', { type });
+        }
+        if (fromDate !== undefined) {
+            query.andWhere('item.createdAt >= :fromDate', { fromDate });
+        }
+        if (toDate !== undefined) {
+            query.andWhere('item.createdAt <= :toDate', { toDate });
+        }
+
+        const [data, total] = await query
+            .orderBy('item.createdAt', 'DESC')
+            .addOrderBy('item.id', 'DESC')
+            .skip((page - 1) * limit)
+            .take(limit)
+            .getManyAndCount();
+
+        return new PaginatedResponse(
+            data,
+            new PaginationMetaResponse(page, limit, total),
+        );
+    }
+
     async getVisibleItemsByConsumer(
         consumerId: number,
     ): Promise<MailboxItem[]> {
@@ -464,6 +522,11 @@ export class MailboxItemService {
         }
 
         const previousStatus = mailboxItem.status;
+
+        this.mailboxItemStatusService.isAvaiableTochangeStatusItem(
+            previousStatus,
+            nextStatus,
+        );
 
         if (mailboxItem.status === MailboxItemStatus.PENDING && nextStatus === MailboxItemStatus.ON_VIEW) {
             if (mailboxItem.accessStatus !== MailboxItemAccessStatus.VISIBLE) {
@@ -508,6 +571,11 @@ export class MailboxItemService {
                 'El item no está disponible para el consumidor',
             );
         }
+
+        this.mailboxItemStatusService.isAvaiableTochangeStatusItem(
+            previousStatus,
+            nextStatus,
+        );
 
         if (mailboxItem.status === MailboxItemStatus.PENDING && nextStatus === MailboxItemStatus.ON_VIEW) {
             mailboxItem.status = nextStatus;
@@ -590,8 +658,29 @@ export class MailboxItemService {
     }
 
     private parseInputDate(value: string, field: string): Date {
-        const date = new Date(value);
-        if (value && !Number.isNaN(date.getTime())) return date;
-        throw new BadRequestException(`${field} debe ser una fecha válida`);
+        return this.parsePeruvianDate(value, field);
+    }
+
+    private parsePeruvianDate(value: string, field: string): Date {
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+        if (!match) {
+            throw new BadRequestException(
+                `${field} debe tener el formato YYYY-MM-DD`,
+            );
+        }
+
+        const [, year, month, day] = match;
+        const date = new Date(
+            Date.UTC(Number(year), Number(month) - 1, Number(day), 5, 0, 0),
+        );
+        if (
+            date.getUTCFullYear() !== Number(year) ||
+            date.getUTCMonth() !== Number(month) - 1 ||
+            date.getUTCDate() !== Number(day)
+        ) {
+            throw new BadRequestException(`${field} debe ser una fecha valida`);
+        }
+
+        return date;
     }
 }

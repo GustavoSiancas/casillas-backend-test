@@ -31,11 +31,12 @@ export class MailboxItem {
     @Column()
     name: string;
 
-    @Column({ name: 'case_number', nullable: true })
+    @Column({
+        type: 'varchar',
+        length: 100,
+        nullable: true,
+    })
     caseNumber: string | null;
-
-    @Column({ name: 'document_date', type: 'datetime' })
-    documentDate: Date;
 
     @Column({ name: 'mailbox_item_type', type: 'enum', enum: MailboxItemType })
     type: MailboxItemType;

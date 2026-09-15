@@ -35,9 +35,6 @@ export class MailboxItemResponseDto {
     @ApiProperty({ nullable: true })
     caseNumber: string | null;
 
-    @ApiProperty()
-    documentDate: Date;
-
     @ApiProperty({ enum: MailboxItemType })
     type: MailboxItemType;
 
@@ -85,7 +82,6 @@ export class MailboxItemResponseDto {
             mail_number: item.mailbox.mail_number,
             name: item.name,
             caseNumber: item.caseNumber,
-            documentDate: item.documentDate,
             type: item.type,
             description: item.description,
             materia: item.materia,

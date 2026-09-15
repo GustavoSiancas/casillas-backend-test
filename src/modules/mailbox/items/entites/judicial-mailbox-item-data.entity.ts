@@ -18,6 +18,9 @@ export class JudicialMailboxItemData {
     @JoinColumn({ name: 'mailbox_item_id' })
     mailboxItem: MailboxItem;
 
+    @Column({ name: 'document_date', type: 'datetime', nullable: true })
+    documentDate: Date | null;
+
     @Column({
         name: 'institution',
         type: 'enum',

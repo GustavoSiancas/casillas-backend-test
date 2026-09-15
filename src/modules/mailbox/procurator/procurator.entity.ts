@@ -1,4 +1,4 @@
-import { MailboxItemDeliverable } from "src/modules/mailbox/items/entites/mailbox-item-deliverable.entity";
+import { MailboxItemDeliverableGroup } from "src/modules/mailbox/items/entites/mailbox-item-deliverable-group.entity";
 import { MailboxProcurator } from "src/modules/mailbox/assignments/entities/mailbox-procurator.entity";
 import { Consumer } from "src/modules/mailbox/consumer/entities/consumer.entity";
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, Unique, UpdateDateColumn } from "typeorm";
@@ -46,8 +46,11 @@ export class Procurator {
     @Column({ nullable: true })
     email: string;
 
-    @OneToMany(() => MailboxItemDeliverable, mailboxItemDeliverable => mailboxItemDeliverable.procurator)
-    mailboxItemDeliverables: MailboxItemDeliverable[];
+    @OneToMany(
+        () => MailboxItemDeliverableGroup,
+        (deliveryGroup) => deliveryGroup.procurator,
+    )
+    mailboxItemDeliverableGroups: MailboxItemDeliverableGroup[];
 
     @OneToMany(
         () => MailboxProcurator,

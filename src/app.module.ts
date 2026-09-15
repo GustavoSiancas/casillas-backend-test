@@ -10,10 +10,13 @@ import { MailboxModule } from './modules/mailbox/mailboxes/mailbox.module';
 import { MailboxItemModule } from './modules/mailbox/items/item.module';
 import { ProcuratorModule } from './modules/mailbox/procurator/procurator.module';
 import { AssignmentsModule } from './modules/mailbox/assignments/assignments.module';
+import { SeedModule } from './database/seed.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   
   imports: [
+    ScheduleModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
@@ -34,6 +37,7 @@ import { AssignmentsModule } from './modules/mailbox/assignments/assignments.mod
     MailboxItemModule,
     ProcuratorModule,
     AssignmentsModule,
+    SeedModule,
   ],
   controllers: [AppController],
   providers: [AppService],
