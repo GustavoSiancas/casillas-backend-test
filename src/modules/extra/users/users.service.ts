@@ -69,12 +69,9 @@ export class UsersService {
             consumer:
                 isConsumer && consumer
                     ? consumerResponseByType[consumer.consumerType].fromEntity(
-                          consumer,
-                      )
-                    : null,
+                        consumer,
+                    )
+                : null,
         };
     }
-
-
-
 }
