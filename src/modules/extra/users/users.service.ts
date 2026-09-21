@@ -6,6 +6,9 @@ import { EntityManager, Repository } from "typeorm";
 import { RegisterRequestDto } from "./dto/register-request.dto";
 import { LoginRequestDto } from "./dto/login-request.dto";
 import { UnauthorizedException } from "@nestjs/common/exceptions";
+import { UserRole } from './enum/users-role.enum';
+import { LoginResponse } from './dto/login-response.dto';
+import { consumerResponseByType } from 'src/modules/mailbox/consumer/dto/response/consumer-detail.response';
 
 @Injectable()
 export class UsersService {
@@ -30,9 +33,16 @@ export class UsersService {
         return await repository.save(user);
     }
 
-    async loginUser(dto: LoginRequestDto): Promise<Users> {
+    async loginUser(dto: LoginRequestDto): Promise<LoginResponse> {
         const user = await this.usersRepository.findOne({
             where: { email: dto.email },
+            relations: {
+                consumer: {
+                    individual: true,
+                    business: true,
+                    lawFirm: true,
+                },
+            },
         });
 
         if (!user) {
@@ -48,7 +58,21 @@ export class UsersService {
             throw new UnauthorizedException('Invalid credentials');
         }
 
-        return user;
+        const { consumer, ...userData } = user;
+        const isConsumer = user.role === UserRole.CONSUMER;
+
+        return {
+            ...userData,
+            consumerType:
+                isConsumer ? consumer?.consumerType ?? null : null,
+            consumerId: isConsumer ? consumer?.id ?? null : null,
+            consumer:
+                isConsumer && consumer
+                    ? consumerResponseByType[consumer.consumerType].fromEntity(
+                          consumer,
+                      )
+                    : null,
+        };
     }
 
 

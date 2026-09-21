@@ -31,6 +31,31 @@ describe('ConsumerService', () => {
         });
     });
 
+    it('returns a consumer by user id with its type relations', async () => {
+        const consumer = {
+            id: 7,
+            consumerType: ConsumerType.BUSINESS,
+        } as Consumer;
+        const repository = {
+            findOne: jest.fn().mockResolvedValue(consumer),
+        } as unknown as jest.Mocked<Repository<Consumer>>;
+        const service = new ConsumerService(
+            repository,
+            {} as DataSource,
+            {} as UsersService,
+        );
+
+        await expect(service.getConsumerByUserId(12)).resolves.toBe(consumer);
+        expect(repository.findOne).toHaveBeenCalledWith({
+            where: { user: { id: 12 } },
+            relations: {
+                individual: true,
+                business: true,
+                lawFirm: true,
+            },
+        });
+    });
+
     it('maps a consumer response when fromEntity is used as a callback', () => {
         const consumer = {
             id: 7,

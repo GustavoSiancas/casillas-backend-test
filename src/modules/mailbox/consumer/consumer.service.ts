@@ -200,6 +200,23 @@ export class ConsumerService {
         return consumer;
     }
 
+    async getConsumerByUserId(userId: number): Promise<Consumer> {
+        const consumer = await this.consumerRepository.findOne({
+            where: { user: { id: userId } },
+            relations: {
+                individual: true,
+                business: true,
+                lawFirm: true,
+            },
+        });
+
+        if (!consumer) {
+            throw new NotFoundException('Consumidor no encontrado');
+        }
+
+        return consumer;
+    }
+
     async getConsumerWithDataUnique(
         data: string,
         consumerType: ConsumerType,

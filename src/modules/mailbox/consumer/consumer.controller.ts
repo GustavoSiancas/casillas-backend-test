@@ -139,6 +139,28 @@ export class ConsumerController {
         return consumerResponseByType[consumerType].fromEntity(consumer);
     }
 
+    @Get('user/:userId')
+    @ApiParam({ name: 'userId', type: Number, description: 'ID del usuario' })
+    @ApiOkResponse({
+        description: 'Consumidor asociado al usuario',
+        schema: {
+            oneOf: [
+                { $ref: getSchemaPath(IndividualConsumerResponse) },
+                { $ref: getSchemaPath(BusinessConsumerResponse) },
+                { $ref: getSchemaPath(LawFirmConsumerResponse) },
+            ],
+        },
+    })
+    @ApiNotFoundResponse({ description: 'Consumidor no encontrado' })
+    async getConsumerByUserId(
+        @Param('userId', ParseIntPipe) userId: number,
+    ): Promise<ConsumerDetailResponse> {
+        const consumer = await this.consumerService.getConsumerByUserId(userId);
+        return consumerResponseByType[consumer.consumerType].fromEntity(
+            consumer,
+        );
+    }
+
     @Get(':id')
     @ApiOkResponse({
         description: 'Consumidor con la información correspondiente a su tipo',
