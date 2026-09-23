@@ -19,12 +19,12 @@ export enum MailboxItemType {
 
 export enum MailboxItemAccessStatus {
     VISIBLE = 'VISIBLE',
-    BLOCKED_UNPAID = 'BLOCKED_UNPAID',
-    UNASSIGNED = 'UNASSIGNED',
+    BLOCKED_UNPAID = 'BLOCKED_UNPAID', // pasa 3 meses sin pagar, se bloquea el acceso
+    UNASSIGNED = 'UNASSIGNED', // no hay nada
 }
 
 @Entity('mailbox_item') 
-export class MailboxItem {
+export class MailboxItem { //notificacion
     @PrimaryGeneratedColumn()
     id: number;
 
